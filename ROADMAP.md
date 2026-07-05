@@ -7,18 +7,21 @@ the point is that each idea is written down with enough context to pick it up la
 
 ## 0. NEXT UP — Vercel deploy (repo is ready; ~10 min of dashboard clicks)
 
+This repo (`BryMad/setlist-scout`) was split out of `BryMad/SetlistScout`'s
+`v2/` directory (history preserved) so the app lives at the repo root; the old
+repo remains the v1 archive and keeps serving Render until cutover.
+
 Repo-side prep is done: `maxDuration = 60` on crawl-heavy routes, no SSE, no
 server-held sessions, Redis Cloud reachable from anywhere. Steps (owner-only):
 
-1. vercel.com → Add New Project → import `BryMad/SetlistScout` (Hobby tier fine).
-2. **Root Directory: `v2/apps/web`** — the one setting that matters; Next.js +
-   npm workspace detected automatically.
-3. Production branch: `v2` (Settings → Git) — every push becomes a deploy.
-4. Env vars (values in `v2/apps/web/.env.local`): `SETLIST_API_KEY`,
+1. vercel.com → Add New Project → import `BryMad/setlist-scout` (Hobby tier fine).
+2. **Root Directory: `apps/web`** — the one setting that matters; Next.js +
+   npm workspace detected automatically. Production branch is `main` (default).
+3. Env vars (values in `apps/web/.env.local`): `SETLIST_API_KEY`,
    `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `REDIS_URL`, and
    `SPOTIFY_REDIRECT_URI=https://<domain>/auth/callback`.
-5. Spotify dashboard: add that HTTPS `/auth/callback` redirect URI.
-6. Domain: buy via Vercel Domains (or Cloudflare/Namecheap) — check
+4. Spotify dashboard: add that HTTPS `/auth/callback` redirect URI.
+5. Domain: buy via Vercel Domains (or Cloudflare/Namecheap) — check
    setlistscout.com / .app — then update redirect URI + dashboard to match.
 
 Notes: first visit per artist on prod is a cold crawl (shared Redis means
