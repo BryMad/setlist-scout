@@ -17,6 +17,21 @@ export default function LabIndexPage() {
         flip through.
       </p>
 
+      <section className="mt-8">
+        <h2 className="font-mono text-xs uppercase tracking-[0.2em] text-zinc-500">Wordmarks</h2>
+        <Link
+          href="/lab/wordmarks"
+          className="mt-3 block rounded-xl border border-zinc-800 bg-zinc-900/40 px-5 py-4 hover:border-indigo-600 hover:bg-zinc-900"
+        >
+          <span className="font-semibold">
+            Setlist <span className="text-indigo-400">Scout</span>
+          </span>
+          <p className="mt-1 text-sm text-zinc-500">
+            15 title treatments at header + hero size — flat color, no gradients
+          </p>
+        </Link>
+      </section>
+
       {[
         { title: "Motion family — the direction", items: VARIANTS.filter((v) => v.slug.startsWith("motion")) },
         { title: "The field", items: VARIANTS.filter((v) => !v.slug.startsWith("motion")) },
