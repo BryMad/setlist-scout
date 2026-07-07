@@ -210,6 +210,87 @@ const MARKS: Mark[] = [
       </span>
     ),
   },
+  {
+    name: "VU meters",
+    note: "the dots become bouncing level meters, spectrum-colored",
+    render: (lg) => (
+      <span className={`inline-flex items-center font-semibold tracking-tight ${lg ? "gap-4 text-5xl" : "gap-2 text-base"}`}>
+        Setlist Scout
+        <span className={`inline-flex items-end ${lg ? "h-9 gap-1.5" : "h-3.5 gap-[2px]"}`}>
+          {["#8b5cf6", "#0ea5e9", "#eab308", "#f97316", "#e11d48"].map((c, idx) => (
+            <span
+              key={c}
+              className={`wm-eq rounded-[1px] ${lg ? "w-1.5" : "w-[3px]"}`}
+              style={{
+                background: c,
+                height: "100%",
+                animationDuration: `${0.7 + (idx % 3) * 0.23}s`,
+                animationDelay: `${idx * 0.09}s`,
+              }}
+            />
+          ))}
+        </span>
+      </span>
+    ),
+  },
+  {
+    name: "VU synced",
+    note: "meters bounce while Scout pulses through the band colors in rhythm",
+    render: (lg) => (
+      <span className={`inline-flex items-center font-semibold tracking-tight ${lg ? "gap-4 text-5xl" : "gap-2 text-base"}`}>
+        Setlist <span className="wm-scoutpulse">Scout</span>
+        <span className={`inline-flex items-end ${lg ? "h-9 gap-1.5" : "h-3.5 gap-[2px]"}`}>
+          {["#8b5cf6", "#0ea5e9", "#eab308", "#f97316", "#e11d48"].map((c, idx) => (
+            <span
+              key={c}
+              className={`wm-eq rounded-[1px] ${lg ? "w-1.5" : "w-[3px]"}`}
+              style={{
+                background: c,
+                height: "100%",
+                animationDuration: `${0.7 + (idx % 3) * 0.23}s`,
+                animationDelay: `${idx * 0.09}s`,
+              }}
+            />
+          ))}
+        </span>
+      </span>
+    ),
+  },
+  {
+    name: "Stereo",
+    note: "L/R channel meters flanking the name, indigo only — quietest of the three",
+    render: (lg) => (
+      <span className={`inline-flex items-center font-semibold tracking-tight ${lg ? "gap-4 text-5xl" : "gap-2 text-base"}`}>
+        <span className={`inline-flex items-end ${lg ? "h-8 gap-1" : "h-3 gap-[2px]"}`}>
+          {[0, 1, 2].map((idx) => (
+            <span
+              key={idx}
+              className={`wm-eq rounded-[1px] bg-indigo-500 ${lg ? "w-1.5" : "w-[3px]"}`}
+              style={{
+                height: "100%",
+                opacity: 0.5 + idx * 0.25,
+                animationDuration: `${0.75 + idx * 0.2}s`,
+              }}
+            />
+          ))}
+        </span>
+        Setlist <span className="text-indigo-400">Scout</span>
+        <span className={`inline-flex items-end ${lg ? "h-8 gap-1" : "h-3 gap-[2px]"}`}>
+          {[0, 1, 2].map((idx) => (
+            <span
+              key={idx}
+              className={`wm-eq rounded-[1px] bg-indigo-500 ${lg ? "w-1.5" : "w-[3px]"}`}
+              style={{
+                height: "100%",
+                opacity: 1 - idx * 0.25,
+                animationDuration: `${1.15 - idx * 0.2}s`,
+              }}
+            />
+          ))}
+        </span>
+      </span>
+    ),
+  },
 ];
 
 export default function Wordmarks2Page() {
@@ -255,8 +336,27 @@ export default function Wordmarks2Page() {
         }
         .wm-pulse { animation: wmPulse 2.5s ease-in-out infinite; }
 
+        /* stereo level meters: each bar bounces on its own period, like
+           channels reacting to different frequencies */
+        @keyframes wmEq {
+          0%, 100% { transform: scaleY(.22); }
+          50% { transform: scaleY(1); }
+        }
+        .wm-eq { transform-origin: bottom; animation: wmEq 1s ease-in-out infinite alternate; }
+
+        /* Scout pulsing through the five band colors on the meters' rhythm */
+        @keyframes wmScoutPulse {
+          0%   { color: #8b5cf6; }
+          20%  { color: #0ea5e9; }
+          40%  { color: #eab308; }
+          60%  { color: #f97316; }
+          80%  { color: #e11d48; }
+          100% { color: #8b5cf6; }
+        }
+        .wm-scoutpulse { animation: wmScoutPulse 4.6s ease-in-out infinite; }
+
         @media (prefers-reduced-motion: reduce) {
-          .wm-field, .wm-drift, .wm-breathe, .wm-track, .wm-pulse { animation: none; }
+          .wm-field, .wm-drift, .wm-breathe, .wm-track, .wm-pulse, .wm-eq, .wm-scoutpulse { animation: none; }
         }
       `}</style>
 

@@ -42,6 +42,42 @@ export default function LabIndexPage() {
               Round 2 — wilder: agitprop, sci-fi, neon, Turrell drift
             </p>
           </Link>
+          <Link
+            href="/lab/wordmarks-3"
+            className="block rounded-xl border border-zinc-800 bg-zinc-900/40 px-5 py-4 hover:border-indigo-600 hover:bg-zinc-900"
+          >
+            <span className="font-semibold">
+              Setlist <span className="text-indigo-400">Scout</span>{" "}
+              <span className="font-mono text-xs text-indigo-500">▁▄█</span>
+            </span>
+            <p className="mt-1 text-sm text-zinc-500">
+              Round 3 — the finalists: stereo + VU synced, slowed, 8 takes each
+            </p>
+          </Link>
+          <Link
+            href="/lab/wordmarks-4"
+            className="block rounded-xl border border-zinc-800 bg-zinc-900/40 px-5 py-4 hover:border-indigo-600 hover:bg-zinc-900"
+          >
+            <span className="font-semibold">
+              Setlist <span className="text-indigo-400">Scout</span>{" "}
+              <span className="font-mono text-xs text-indigo-500">▂▆▃</span>
+            </span>
+            <p className="mt-1 text-sm text-zinc-500">
+              Round 4 — hover to play: random bounce, all purple + static spectrum ramps
+            </p>
+          </Link>
+          <Link
+            href="/lab/wordmarks-5"
+            className="block rounded-xl border border-zinc-800 bg-zinc-900/40 px-5 py-4 hover:border-indigo-600 hover:bg-zinc-900"
+          >
+            <span className="font-semibold">
+              <span className="font-mono text-xs text-indigo-500">▁▃▅</span> Setlist{" "}
+              <span className="text-indigo-400">Scout</span>
+            </span>
+            <p className="mt-1 text-sm text-zinc-500">
+              Round 5 — staircase left: sandwich colorings + hover color shifts
+            </p>
+          </Link>
         </div>
       </section>
 
