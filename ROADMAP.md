@@ -5,7 +5,27 @@ the point is that each idea is written down with enough context to pick it up la
 
 ---
 
-## 0. NEXT UP — Festival playlists
+## 0. TOP PRIORITY — Info/About page + login state in the nav
+
+Port the v1 site's informational surface and make auth visible:
+
+1. **About/info page** (`/about`): what the site does and how it works —
+   prediction from setlist.fm data, Spotify matching, the confidence bands —
+   plus data-source credits and the not-affiliated-with-Spotify disclaimer.
+   Port v1's About copy as the base, update for v2's mechanics. Link it from
+   the header and/or footer. (Privacy/Terms/EUA are already live at `/legal`,
+   ported verbatim — but the §6 note stands: privacy copy still describes
+   v1's 24-hour sessions and needs a v2 pass — fold that into this work.)
+2. **Spotify login/logout in the nav bar** (v1 parity): header shows
+   "Log in with Spotify" when signed out; when signed in, show state +
+   a logout control. Mechanics: the `sp_session` cookie is HttpOnly, so the
+   header needs a tiny `/api/me` status endpoint (client fetch on mount) and
+   a `/auth/logout` that clears the cookie — per the EUA promise, logging
+   out removes the user's data from our side.
+
+---
+
+## 0.1. IN FLIGHT — Festival playlists
 
 **The product:** pick a festival (Coachella, Lollapalooza, Glastonbury…) →
 see this year's lineup → choose what kind of playlist you want → one click,
