@@ -5,28 +5,40 @@ the point is that each idea is written down with enough context to pick it up la
 
 ---
 
-## 0. NEXT UP — Vercel deploy (repo is ready; ~10 min of dashboard clicks)
+## 0. NEXT UP — Relive-a-set optionality + show search
 
-This repo (`BryMad/setlist-scout`) was split out of `BryMad/SetlistScout`'s
-`v2/` directory (history preserved) so the app lives at the repo root; the old
-repo remains the v1 archive and keeps serving Render until cutover.
+The tour page currently stacks the aggregate song list on top of the
+pick-a-show grid — on mobile the shows are buried under 60+ songs of scroll.
+Give Relive the same top-of-page mode control Predict has (the Auto / Latest
+tour / Last 60 shows pill pattern):
 
-Repo-side prep is done: `maxDuration = 60` on crawl-heavy routes, no SSE, no
-server-held sessions, Redis Cloud reachable from anywhere. Steps (owner-only):
+1. **Tour page view pills** — after a tour is chosen, two pills at the top:
+   - **"What they played"** (default): the aggregate ranked song list with
+     likelihoods (today's view).
+   - **"Pick a show"**: the selectable list of that tour's shows, front and
+     center instead of below the fold.
+2. **Search at the tour-select phase** — a filter box on the tours page that
+   searches *shows* (city, venue, date), so typing "sydney" or a stadium name
+   surfaces the tours/shows that match even when the tour name doesn't.
+3. **Search on the pick-a-show list** — same filter box scoped to the chosen
+   tour's shows: dates, venues, cities.
 
-1. vercel.com → Add New Project → import `BryMad/setlist-scout` (Hobby tier fine).
-2. **Root Directory: `apps/web`** — the one setting that matters; Next.js +
-   npm workspace detected automatically. Production branch is `main` (default).
-3. Env vars (values in `apps/web/.env.local`): `SETLIST_API_KEY`,
-   `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `REDIS_URL`, and
-   `SPOTIFY_REDIRECT_URI=https://<domain>/auth/callback`.
-4. Spotify dashboard: add that HTTPS `/auth/callback` redirect URI.
-5. Domain: buy via Vercel Domains (or Cloudflare/Namecheap) — check
-   setlistscout.com / .app — then update redirect URI + dashboard to match.
+Notes: shows data is already fully loaded server-side (getAllShows), so both
+searches can be client-side filters over props — no new endpoints needed.
+Pills can be URL params (`?view=shows`) to stay linkable, matching how
+Predict's mode pills work.
 
-Notes: first visit per artist on prod is a cold crawl (shared Redis means
-already-tested artists are instant); Hobby tier is non-commercial; do the
-real-device phone pass once live.
+---
+
+## 0b. DONE 2026-07-05 — Vercel deploy ✓
+
+Live at https://setlist-scout-web.vercel.app (repo `BryMad/setlist-scout`,
+root dir `apps/web`, branch `main`, push-to-deploy). Spotify redirect URI
+updated; login + playlist save verified in prod. The name `setlist-scout`
+was taken on vercel.app by an unrelated app — remaining step: **buy the real
+domain** (setlistscout.com / .app via Vercel Domains), then update
+`SPOTIFY_REDIRECT_URI` env + Spotify dashboard to match, and do the
+real-device phone pass. Old site stays on Render until cutover.
 
 ---
 
