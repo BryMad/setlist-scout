@@ -268,3 +268,84 @@ export async function matchTracks(
   }
   return results;
 }
+
+/* ── festival playlists (roadmap §0) ─────────────────────────────── */
+
+export interface FestivalArtistData {
+  /** Lineup name as requested (the client's map key). */
+  lineupName: string;
+  /** Resolved display name (Spotify's casing) when found. */
+  name: string;
+  image: string | null;
+  mbid: string | null;
+  status: "ok" | "no-match" | "no-shows";
+  typicalSetLength: number | null;
+  /** Top predicted songs, likelihood-ordered, pre-matched for playlist uris. */
+  songs: Array<{ key: string; title: string; pct: number; uri: string | null }>;
+}
+
+const FESTIVAL_ARTIST_TTL_S = 24 * 60 * 60;
+const FESTIVAL_SONG_BUDGET = 20;
+
+/**
+ * One festival lineup slot, end to end: name → Spotify identity (image,
+ * canonical casing) → setlist.fm incarnation (most recently active) →
+ * recent shows → auto prediction → top songs matched to Spotify tracks.
+ * Every inner step has its own cache; this caches the assembled DTO so a
+ * warm festival page costs one Redis read per artist.
+ */
+export async function festivalArtist(lineupName: string): Promise<FestivalArtistData> {
+  const cacheKey = `v2:festartist1:${normName(lineupName)}`;
+  const cached = await cacheGet<FestivalArtistData>(cacheKey);
+  if (cached) return cached;
+
+  const miss = (status: "no-match" | "no-shows", extra?: Partial<FestivalArtistData>): FestivalArtistData => ({
+    lineupName,
+    name: lineupName,
+    image: null,
+    mbid: null,
+    status,
+    typicalSetLength: null,
+    songs: [],
+    ...extra,
+  });
+
+  const spotifyHit = (await spotify.searchArtists(lineupName, 1).catch(() => []))[0];
+  const displayName = spotifyHit?.name ?? lineupName;
+  const image = spotifyHit?.imageUrl ?? null;
+
+  const incarnations = await resolveArtistIncarnations(displayName).catch(() => []);
+  const identity = incarnations[0];
+  if (!identity) {
+    const result = miss("no-match", { name: displayName, image });
+    await cacheSet(cacheKey, result, FESTIVAL_ARTIST_TTL_S);
+    return result;
+  }
+
+  const shows = await getShows(identity.mbid).catch(() => []);
+  const prediction = runPrediction(shows, { kind: "auto" });
+  if (!prediction || prediction.songs.length === 0) {
+    const result = miss("no-shows", { name: displayName, image, mbid: identity.mbid });
+    await cacheSet(cacheKey, result, FESTIVAL_ARTIST_TTL_S);
+    return result;
+  }
+
+  const top = prediction.songs.slice(0, FESTIVAL_SONG_BUDGET);
+  const matches = await matchTracks(displayName, top);
+  const result: FestivalArtistData = {
+    lineupName,
+    name: displayName,
+    image,
+    mbid: identity.mbid,
+    status: "ok",
+    typicalSetLength: prediction.typicalSetLength,
+    songs: top.map((song) => ({
+      key: song.key,
+      title: song.name,
+      pct: Math.round(song.likelihood * 100),
+      uri: matches.get(song.key)?.uri ?? null,
+    })),
+  };
+  await cacheSet(cacheKey, result, FESTIVAL_ARTIST_TTL_S);
+  return result;
+}

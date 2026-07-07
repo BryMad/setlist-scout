@@ -1,0 +1,28 @@
+{
+  "slug": "lollapalooza-2026",
+  "name": "Lollapalooza",
+  "year": 2026,
+  "dates": "Jul 30 – Aug 2, 2026",
+  "location": "Grant Park, Chicago",
+  "lineup": [
+    { "name": "Charli XCX", "tier": "headliner" },
+    { "name": "Tate McRae", "tier": "headliner" },
+    { "name": "Lorde", "tier": "headliner" },
+    { "name": "Olivia Dean", "tier": "headliner" },
+    { "name": "John Summit", "tier": "headliner" },
+    { "name": "Jennie", "tier": "headliner" },
+    { "name": "The Smashing Pumpkins", "tier": "headliner" },
+    { "name": "The xx", "tier": "headliner" },
+    { "name": "Lil Uzi Vert" },
+    { "name": "Sombr" },
+    { "name": "The Neighbourhood" },
+    { "name": "Yungblud" },
+    { "name": "beabadoobee" },
+    { "name": "Ethel Cain" },
+    { "name": "Empire of the Sun" },
+    { "name": "Major Lazer" },
+    { "name": "aespa" },
+    { "name": "The Chainsmokers" },
+    { "name": "Disco Lines" }
+  ]
+}

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import ArtistSearch from "@/components/ArtistSearch";
 import Wordmark from "@/components/Wordmark";
 
@@ -14,6 +15,13 @@ export default function Home() {
       <div className="mt-10 w-full">
         <ArtistSearch variant="hero" autoFocus />
       </div>
+
+      <Link
+        href="/festivals"
+        className="cascade-in mt-8 text-sm text-zinc-500 transition hover:text-indigo-300 [animation-delay:240ms]"
+      >
+        Going to a festival? Build a lineup playlist →
+      </Link>
     </main>
   );
 }
