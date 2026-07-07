@@ -1,9 +1,12 @@
 import ArtistSearch from "@/components/ArtistSearch";
+import Wordmark from "@/components/Wordmark";
 
 export default function Home() {
   return (
     <main className="mx-auto flex max-w-xl flex-col items-center px-6 pt-[22vh]">
-      <h1 className="text-4xl font-semibold tracking-tight">Setlist Scout</h1>
+      <h1>
+        <Wordmark size="hero" />
+      </h1>
       <p className="mt-3 text-center text-zinc-400">
         Know the setlist before the show.
       </p>

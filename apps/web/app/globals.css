@@ -67,3 +67,64 @@ body:has([data-lab]) > footer {
     transition: none;
   }
 }
+
+/* ── wordmark: staircase meter + fuchsia hover shift (lab round 5 winner) ──
+   Rest: frozen ascending meter, indigo. Hover: bars bounce on three
+   non-harmonic level patterns; the meter and "Scout" share currentColor and
+   turn indigo → fuchsia together. */
+
+@keyframes wm-eq-a {
+  0% { transform: scaleY(0.3); }
+  22% { transform: scaleY(0.95); }
+  40% { transform: scaleY(0.45); }
+  62% { transform: scaleY(1); }
+  80% { transform: scaleY(0.35); }
+  100% { transform: scaleY(0.3); }
+}
+@keyframes wm-eq-b {
+  0% { transform: scaleY(0.55); }
+  28% { transform: scaleY(0.25); }
+  50% { transform: scaleY(0.9); }
+  72% { transform: scaleY(0.4); }
+  100% { transform: scaleY(0.55); }
+}
+@keyframes wm-eq-c {
+  0% { transform: scaleY(0.7); }
+  25% { transform: scaleY(0.4); }
+  48% { transform: scaleY(1); }
+  70% { transform: scaleY(0.3); }
+  88% { transform: scaleY(0.8); }
+  100% { transform: scaleY(0.7); }
+}
+
+.wm-bar {
+  transform-origin: bottom;
+  transition: transform 0.3s ease;
+}
+.wm:hover .wm-bar {
+  animation-duration: var(--d);
+  animation-delay: var(--dl);
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+.wm:hover .wm-a { animation-name: wm-eq-a; }
+.wm:hover .wm-b { animation-name: wm-eq-b; }
+.wm:hover .wm-c { animation-name: wm-eq-c; }
+
+.wm-shift {
+  color: #818cf8; /* indigo-400 */
+  transition: color 0.5s ease;
+}
+.wm:hover .wm-shift {
+  color: #f472b6; /* fuchsia turn */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wm:hover .wm-bar {
+    animation: none;
+  }
+  .wm-shift,
+  .wm-bar {
+    transition: none;
+  }
+}

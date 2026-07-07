@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import ArtistSearch from "./ArtistSearch";
+import Wordmark from "./Wordmark";
 
 /** Always-available top bar: logo home link + artist search on every page. */
 export default function SiteHeader() {
@@ -12,8 +13,8 @@ export default function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-zinc-800 bg-zinc-950/85 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-3xl items-center justify-between gap-4 px-6">
-        <Link href="/" className="shrink-0 text-base font-semibold tracking-tight">
-          Setlist Scout
+        <Link href="/" className="shrink-0">
+          <Wordmark />
         </Link>
         {!isHome && <ArtistSearch variant="header" />}
       </div>
