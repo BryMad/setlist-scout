@@ -5,7 +5,151 @@ the point is that each idea is written down with enough context to pick it up la
 
 ---
 
-## 0. DONE 2026-07-07 — Relive-a-set optionality + show search ✓
+## 0. NEXT UP — Festival playlists
+
+**The product:** pick a festival (Coachella, Lollapalooza, Glastonbury…) →
+see this year's lineup → choose what kind of playlist you want → one click,
+one Spotify playlist. It serves three people at once: "which bands should I
+check out?", "which sets do I want to see?", and "I picked my bands — what
+will they play?" (each lineup row links to the artist's full predict page).
+
+**Implementation sketch:**
+
+1. **Lineup source — curated first, pluggable later.** setlist.fm can't
+   provide lineups *before* a festival happens, so define a
+   `FestivalSource` interface and start with curated JSON files
+   (`data/festivals/coachella-2026.json`: slug, name, year, dates, location,
+   `lineup: [{ name, day?, spotifyId? }]`). Lineups are public posters —
+   maintaining a handful of majors per year by hand is cheap. Later swap in
+   MusicBrainz Events (structured festival entities with artist relations)
+   for auto-population; the UI never knows the difference.
+
+2. **Routes.** `/festivals` (index of curated festivals, entry point linked
+   from the home page) → `/festival/[slug]` (lineup + playlist builder).
+   No SectionNav — festivals are an artist-less entry path.
+
+3. **Resolution + prediction, per artist, progressively.** A 90-act lineup
+   can't be predicted in one 60s serverless request on a cold cache. The
+   lineup page renders instantly, then the client hydrates each artist in
+   parallel via one small endpoint per artist (name → existing Spotify
+   search → mbid resolve with incarnation pruning → `getShows` recent-100 →
+   `predict` auto → top songs). Every step already exists and is
+   Redis-cached individually, so the second visitor gets the whole festival
+   instantly. Unresolvable lineup names render as "couldn't match" and are
+   skippable, never fatal.
+
+4. **Choose-ability (the playlist options):**
+   - **Depth per artist:** "1 song — the lock" / "top 3" / "top 5" /
+     "everything likely" (≥40%).
+   - **Artist selection:** checkboxes on the lineup (default all), plus
+     day filters when lineup data has days.
+   - Playlist grouped by artist in lineup order; name like
+     "Coachella 2026 — Setlist Scout".
+   - Save via existing `/api/playlist` (already chunks 100 uris per call).
+
+5. **Guardrails.** Keep the single `playlist-modify-public` scope — no
+   listening-history scopes for "personalized" lineup ranking; if we ever
+   want "sort by what you'd like," use Spotify popularity, not user data.
+   Track-match budget: matching only the chosen depth per artist keeps
+   Spotify API usage proportional to the playlist, not the festival.
+
+**Phasing:** P1 = 3-5 curated festivals + builder with depth options.
+P2 = MusicBrainz Events auto-lineups, day/stage filters, year archive.
+P3 = discovery aids (sort lineup by likelihood confidence, popularity).
+
+---
+
+## 0.5. QUEUED — Predict-page stats HUD
+
+A compact data widget on the Predict view — glanceable by default, clickable
+to go deeper. Aesthetic reference: the lab's "Telemetry" skin, translated
+into the site's quiet Geist language (this is where the "nerdy data
+presentation" energy gets to live).
+
+**Default panel (no interaction):** three stat tiles —
+- **Likely encore** — song(s) with the highest encoreRate × likelihood
+- **Most played** — the top likelihood song (with plays/shows count)
+- **Usual opener** — highest openerRate song
+
+**Click to flip panels:**
+- **By album** — which albums dominate the current setlists: share of the
+  analyzed window per album as a bar/donut breakdown. Album names come free
+  from the Spotify matches we already fetch (match.album on the top 60).
+- Later candidates: era/decade split, cover count, "due" songs (gap stat
+  from §3) — the HUD is the natural home for those.
+
+**Layout:** the page is max-w-3xl; on xl screens the HUD sits as a sticky
+side widget (page grows a second column), on mobile it's a collapsible card
+between the confidence panel and the legend.
+
+**Engine prerequisite (shared with §1):** the normalizer currently flattens
+set structure away. Keeping `setIndex` / `isEncore` / `positionInShow` per
+song and computing per-song position stats (openerRate, closerRate,
+encoreRate) is exactly the prerequisite §1 (true predicted setlist) needs —
+building the HUD first ships user value while laying §1's foundation.
+Album shares need no engine work (pure aggregation over existing matches).
+
+---
+
+## 0.6. QUEUED — Prefer live versions + real live recordings in Relive
+
+Two related features, one theme: Spotify is full of live recordings and we
+currently ignore them.
+
+**A. "Prefer live versions" toggle (site-wide).** Anywhere tracks get
+matched (predict, tour, show, festival playlists), a toggle switches the
+matcher to prefer live recordings: query variants with "live", candidates
+whose track/album title says live get boosted instead of penalized, studio
+version as fallback when no live cut exists. Implementation notes: the
+match cache key must include the preference (new namespace, e.g.
+`v2:track3:live:` vs `v2:track3:studio:`) so the two modes never collide;
+toggle state can live in a cookie or query param and flows into
+`matchTracks`. Playlist save then simply uses whatever's matched.
+
+**B. Hoist actual live recordings in Relive.** When a tour (or single show)
+is picked, search Spotify's *albums* for real live releases from that era —
+Grateful Dead date-named shows are the canonical case; official live albums
+(e.g. U2's Sphere releases) also qualify. Sketch: album search on the
+artist (queries: tour name, "live" + tour years, exact date for show
+pages), filter by release date within/near the tour window + "live"
+signals in the title, rank by name/date proximity. When found, promote a
+card at the top: "This tour has a real live recording on Spotify" → links
+to the album (and playlist-from-album as an option). Show pages try the
+exact date first ("1977-05-08"). Cache per artist+era in Redis. False
+positives are the risk (greatest-hits "live" compilations) — be
+conservative, require date or tour-name corroboration.
+
+---
+
+## 0.7. QUEUED — Apple Music support (full parity)
+
+Everything the Spotify integration does, for Apple Music: login, track
+matching with art/albums, and playlist creation — user picks their service.
+
+**Architecture:** extract a `MusicService` interface from the Spotify
+client (searchArtists, matchSongs, createPlaylist, auth/session) with
+Spotify + Apple implementations. UI grows a provider choice at the save
+button ("Save to Spotify / Save to Apple Music") and provider-correct
+attribution everywhere the canonical rows render (Apple has its own badge
+and metadata display guidelines, like Spotify's).
+
+**Apple specifics to plan around:**
+- Requires Apple Developer Program ($99/yr) + a MusicKit key; the server
+  signs developer tokens (ES256 JWT), unlike Spotify's client-credentials.
+- User auth is MusicKit JS in the browser (yields a Music-User-Token) —
+  a different shape from the OAuth redirect flow; session storage stays
+  cookie-based but the login UX differs.
+- Catalog search + playlist creation via the Apple Music API
+  (`/v1/catalog/{storefront}/search`, `/v1/me/library/playlists`);
+  storefront must follow the user's country.
+- Users need an active Apple Music subscription for library writes.
+- Legal/consent copy currently names Spotify specifically — the consent
+  gate, EUA/privacy summaries, and footer attribution all need
+  provider-aware updates before launch.
+
+---
+
+## 0b. DONE 2026-07-07 — Relive-a-set optionality + show search ✓
 
 Shipped: tour page view pills ("What they played" / "Pick a show", URL param
 `?view=shows`, Spotify matching only runs in the played view); tours page
@@ -18,7 +162,7 @@ tours page payload for the show index; revisit if it ever matters.
 
 ---
 
-## 0b. DONE 2026-07-05 — Vercel deploy ✓
+## 0c. DONE 2026-07-05 — Vercel deploy ✓
 
 Live at https://setlist-scout-web.vercel.app (repo `BryMad/setlist-scout`,
 root dir `apps/web`, branch `main`, push-to-deploy). Spotify redirect URI
