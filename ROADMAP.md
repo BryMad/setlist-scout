@@ -5,28 +5,16 @@ the point is that each idea is written down with enough context to pick it up la
 
 ---
 
-## 0. NEXT UP — Relive-a-set optionality + show search
+## 0. DONE 2026-07-07 — Relive-a-set optionality + show search ✓
 
-The tour page currently stacks the aggregate song list on top of the
-pick-a-show grid — on mobile the shows are buried under 60+ songs of scroll.
-Give Relive the same top-of-page mode control Predict has (the Auto / Latest
-tour / Last 60 shows pill pattern):
-
-1. **Tour page view pills** — after a tour is chosen, two pills at the top:
-   - **"What they played"** (default): the aggregate ranked song list with
-     likelihoods (today's view).
-   - **"Pick a show"**: the selectable list of that tour's shows, front and
-     center instead of below the fold.
-2. **Search at the tour-select phase** — a filter box on the tours page that
-   searches *shows* (city, venue, date), so typing "sydney" or a stadium name
-   surfaces the tours/shows that match even when the tour name doesn't.
-3. **Search on the pick-a-show list** — same filter box scoped to the chosen
-   tour's shows: dates, venues, cities.
-
-Notes: shows data is already fully loaded server-side (getAllShows), so both
-searches can be client-side filters over props — no new endpoints needed.
-Pills can be URL params (`?view=shows`) to stay linkable, matching how
-Predict's mode pills work.
+Shipped: tour page view pills ("What they played" / "Pick a show", URL param
+`?view=shows`, Spotify matching only runs in the played view); tours page
+search box filtering all shows by city/venue/date/tour (multi-term AND,
+"sydney 2019" works), surfacing matching tours and individual nights; same
+filter scoped to the tour's shows in the pick-a-show view. All client-side
+filters over server-loaded data (components/ShowCards.tsx) — no new
+endpoints. Note: an artist with a huge history ships a ~250KB (pre-gzip)
+tours page payload for the show index; revisit if it ever matters.
 
 ---
 

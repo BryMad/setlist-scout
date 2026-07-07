@@ -1,5 +1,5 @@
-import Link from "next/link";
 import SectionNav from "@/components/SectionNav";
+import { TourBrowser } from "@/components/ShowCards";
 import { getAllShows } from "@/lib/data";
 import { summarizeTours } from "@setlistscout/engine";
 
@@ -20,38 +20,37 @@ export default async function ToursPage({ params, searchParams }: PageProps) {
   const tours = summarizeTours(shows);
   const query = `?name=${encodeURIComponent(name)}`;
 
+  // slim DTO for the client-side filter — never ship the songs
+  const lightShows = shows
+    .filter((show) => show.songCount > 0)
+    .map((show) => ({
+      id: show.id,
+      date: show.date,
+      venue: show.venue ?? "",
+      city: show.city ?? "",
+      tour: show.tourName ?? "",
+    }));
+
   return (
     <main className="mx-auto max-w-3xl px-6 py-10">
       <h1 className="cascade-in text-3xl font-semibold tracking-tight">{name}</h1>
       <SectionNav mbid={mbid} name={name} active="relive" />
 
       <p className="cascade-in mt-6 text-sm text-zinc-500 [animation-delay:120ms]">
-        {tours.length} tours across {shows.length} recorded shows. Pick a tour to
-        see what got played — or drill into a single night.
+        {tours.length} tours across {lightShows.length} recorded shows. Pick a tour
+        to see what got played — or search across every night they&apos;ve logged.
       </p>
 
-      <ul className="mt-6 space-y-2">
-        {tours.map((tour, index) => (
-          <li
-            key={tour.name}
-            className="cascade-in"
-            style={{ animationDelay: `${180 + Math.min(index, 12) * 60}ms` }}
-          >
-            <Link
-              href={`/artist/${mbid}/tour/${encodeURIComponent(tour.name)}${query}`}
-              className="flex items-baseline justify-between gap-4 rounded-xl border border-zinc-800 bg-zinc-900/40 px-5 py-4 hover:border-indigo-600 hover:bg-zinc-900"
-            >
-              <span className="min-w-0">
-                <span className="block truncate font-semibold">{tour.name}</span>
-                <span className="font-mono text-xs text-zinc-500">{tour.years}</span>
-              </span>
-              <span className="shrink-0 font-mono text-xs text-zinc-400">
-                {tour.showCount} show{tour.showCount === 1 ? "" : "s"}
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
+      <TourBrowser
+        mbid={mbid}
+        nameQuery={query}
+        tours={tours.map((tour) => ({
+          name: tour.name,
+          years: tour.years,
+          showCount: tour.showCount,
+        }))}
+        shows={lightShows}
+      />
 
       {tours.length === 0 && (
         <p className="mt-10 text-zinc-400">
