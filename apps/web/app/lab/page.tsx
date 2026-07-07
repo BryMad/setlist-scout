@@ -19,17 +19,30 @@ export default function LabIndexPage() {
 
       <section className="mt-8">
         <h2 className="font-mono text-xs uppercase tracking-[0.2em] text-zinc-500">Wordmarks</h2>
-        <Link
-          href="/lab/wordmarks"
-          className="mt-3 block rounded-xl border border-zinc-800 bg-zinc-900/40 px-5 py-4 hover:border-indigo-600 hover:bg-zinc-900"
-        >
-          <span className="font-semibold">
-            Setlist <span className="text-indigo-400">Scout</span>
-          </span>
-          <p className="mt-1 text-sm text-zinc-500">
-            15 title treatments at header + hero size — flat color, no gradients
-          </p>
-        </Link>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <Link
+            href="/lab/wordmarks"
+            className="block rounded-xl border border-zinc-800 bg-zinc-900/40 px-5 py-4 hover:border-indigo-600 hover:bg-zinc-900"
+          >
+            <span className="font-semibold">
+              Setlist <span className="text-indigo-400">Scout</span>
+            </span>
+            <p className="mt-1 text-sm text-zinc-500">
+              Round 1 — 15 treatments in Geist, flat color
+            </p>
+          </Link>
+          <Link
+            href="/lab/wordmarks-2"
+            className="block rounded-xl border border-zinc-800 bg-zinc-900/40 px-5 py-4 hover:border-indigo-600 hover:bg-zinc-900"
+          >
+            <span className="font-semibold uppercase tracking-wide">
+              Setlist <span className="text-indigo-400">Scout</span>
+            </span>
+            <p className="mt-1 text-sm text-zinc-500">
+              Round 2 — wilder: agitprop, sci-fi, neon, Turrell drift
+            </p>
+          </Link>
+        </div>
       </section>
 
       {[
