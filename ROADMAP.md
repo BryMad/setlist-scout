@@ -25,7 +25,12 @@ Port the v1 site's informational surface and make auth visible:
 
 ---
 
-## 0.1. IN FLIGHT — Festival playlists
+## 0.1. IN FLIGHT — Festival playlists (feature-flagged OFF)
+
+**Dark-shipped behind `ENABLE_FESTIVALS`** (v1 tradition): all routes
+(/festivals, /festival/*, both APIs), the home-page link, and the weekly
+cron 404/no-op unless the env var is set. Dev has it on in .env.local;
+flip it on in the Vercel dashboard when it's ready for the public.
 
 **The product:** pick a festival (Coachella, Lollapalooza, Glastonbury…) →
 see this year's lineup → choose what kind of playlist you want → one click,
@@ -35,14 +40,22 @@ will they play?" (each lineup row links to the artist's full predict page).
 
 **Implementation sketch:**
 
-1. **Lineup source — curated first, pluggable later.** setlist.fm can't
-   provide lineups *before* a festival happens, so define a
-   `FestivalSource` interface and start with curated JSON files
-   (`data/festivals/coachella-2026.json`: slug, name, year, dates, location,
-   `lineup: [{ name, day?, spotifyId? }]`). Lineups are public posters —
-   maintaining a handful of majors per year by hand is cheap. Later swap in
-   MusicBrainz Events (structured festival entities with artist relations)
-   for auto-population; the UI never knows the difference.
+1. **Lineup source — Wikipedia via `scripts/festival-refresh.mjs`** (built
+   2026-07-07). Wikipedia maintains full festival lineups in parseable
+   wikitext soon after announcement ("List of X lineups by year" articles,
+   or whole year-articles like "Coachella 2026") — including days. The
+   script maps festival → article/section/block, parses `{{hlist}}` +
+   bullets, writes `data/festivals/<slug>.draft.json` for review;
+   `--promote` merges into the live file preserving our headliner tiers.
+   Rerun whenever lineups update; add a festival = one registry entry.
+   Sources that FAILED live testing (2026-07-07), don't re-litigate:
+   MusicBrainz Events (2026 majors mostly absent; existing events incl.
+   Coachella 2024/2026 have ZERO artist relations), Music Festival Wizard
+   (Cloudflare-walled), Songkick/Bandsintown (partner-gated), Clashfinder
+   (account-gated JSON, UK-skewed, fills at set-times not announcement).
+   Untested option if ever needed: Ticketmaster Discovery API (free key,
+   events carry "attractions"). Gaps (e.g. Outside Lands 2026 not on
+   Wikipedia yet) fall back to hand-curated JSON from news searches.
 
 2. **Routes.** `/festivals` (index of curated festivals, entry point linked
    from the home page) → `/festival/[slug]` (lineup + playlist builder).
@@ -73,8 +86,49 @@ will they play?" (each lineup row links to the artist's full predict page).
    Track-match budget: matching only the chosen depth per artist keeps
    Spotify API usage proportional to the playlist, not the festival.
 
-**Phasing:** P1 = 3-5 curated festivals + builder with depth options.
-P2 = MusicBrainz Events auto-lineups, day/stage filters, year archive.
+**Shipped so far (2026-07-07):** P1 builder + per-artist pipeline; full
+Wikipedia lineups (Lolla 172 / Coachella 168 / ACL 123 / Primavera 49;
+Outside Lands stays hand-curated until Wikipedia has it); depth options
+reworked to "Top 3 / Top 10 / Everything recent" (everything = every song
+in the artist's auto-selected prediction window, capped 40/artist).
+
+**Store & refresh process (shipped):** three layers, all automatic —
+1. *Festivals:* repo seed JSONs (from `scripts/festival-refresh.mjs`) +
+   Redis override written weekly by `/api/cron/refresh-festivals`
+   (vercel.json cron, Mon 06:00 UTC; set `CRON_SECRET` env in Vercel).
+   A failed parse keeps the previous lineup — never blanks a festival.
+2. *Artists:* per-act DTO (resolve→predict→match) cached in Redis 7 days
+   (`v2:festartist2:`), refreshed lazily on first visit after expiry.
+3. *Playlists:* assembled client-side from the cached artist DTOs — nothing
+   extra to store; track matches themselves cache 90 days.
+
+**Directory + lazy discovery (shipped 2026-07-07):** exhaustive coverage
+without bulk crawling —
+- *Upcoming only:* search results and the featured list both filter to
+  festivals that haven't ended (registry entries carry `endsOn`; directory
+  entries use MB dates). Past editions stay reachable by direct URL.
+- *Search any festival:* live MusicBrainz typeahead on /festivals
+  (`/api/festivals/search`, query-cached 7d; year-scoped query first so
+  current editions beat the 100+ per-day/stage sub-events; sub-events
+  filtered; upcoming editions sorted first). MB knows ~1,265 festivals
+  for 2026 even though its lineups are empty.
+- *Lineup on first visit:* opening `/festival/mb-<mbid>` runs Wikipedia
+  discovery (exact-title guesses + Wikipedia search fallback — that's how
+  MB's formal "Coachella Valley Music and Arts Festival 2026" resolves to
+  the "Coachella 2026" article, verified: 168 acts in ~10s) and stores the
+  result 60d. No lineup found → honest "not announced yet" page + 7d
+  retry marker. Edition year derives from the MB entry itself, so past
+  editions discover their own year.
+- *Interest-driven refresh:* every festival page open increments
+  `v2:fest:interest`; the weekly cron re-discovers only the top-15
+  most-opened directory festivals (+ the featured registry). Nobody
+  searching = no calls spent.
+
+**Next:** day filters on the builder (Lolla data already has days);
+pre-warm cron for lineup artists (spread batches to respect serverless
+budget); location/country display for directory festivals (MB has place
+rels — one extra lookup); prose-recap festivals need hand curation
+(Governors Ball, Osheaga, Shaky Knees).
 P3 = discovery aids (sort lineup by likelihood confidence, popularity).
 
 ---
