@@ -131,3 +131,27 @@ export async function cacheGetMany<T>(keys: string[]): Promise<(T | undefined)[]
   }
   return results;
 }
+
+/** Hash-field increment (Redis-only — interest counters survive restarts;
+ *  silently a no-op without Redis, which is fine for dev). */
+export async function cacheHashIncr(key: string, field: string): Promise<void> {
+  const redis = await getRedis();
+  if (!redis) return;
+  try {
+    await redis.hIncrBy(key, field, 1);
+  } catch {
+    /* counters are best-effort */
+  }
+}
+
+/** Read a whole counters hash: { field: count }. */
+export async function cacheHashGetAll(key: string): Promise<Record<string, number>> {
+  const redis = await getRedis();
+  if (!redis) return {};
+  try {
+    const raw = await redis.hGetAll(key);
+    return Object.fromEntries(Object.entries(raw).map(([k, v]) => [k, Number(v)]));
+  } catch {
+    return {};
+  }
+}

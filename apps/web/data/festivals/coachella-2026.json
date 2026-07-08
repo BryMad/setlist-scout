@@ -1,0 +1,519 @@
+{
+  "slug": "coachella-2026",
+  "name": "Coachella",
+  "year": 2026,
+  "dates": "Apr 10–19, 2026",
+  "endsOn": "2026-04-19",
+  "location": "Empire Polo Club, Indio",
+  "source": "wikipedia:Coachella 2026#Line-up (2026-07-08)",
+  "lineup": [
+    {
+      "name": "Sabrina Carpenter",
+      "tier": "headliner"
+    },
+    {
+      "name": "Anyma",
+      "tier": "headliner"
+    },
+    {
+      "name": "Justin Bieber",
+      "tier": "headliner"
+    },
+    {
+      "name": "Karol G",
+      "tier": "headliner"
+    },
+    {
+      "name": "The xx"
+    },
+    {
+      "name": "Teddy Swims"
+    },
+    {
+      "name": "Record Safari"
+    },
+    {
+      "name": "The Strokes"
+    },
+    {
+      "name": "Giveon"
+    },
+    {
+      "name": "Addison Rae"
+    },
+    {
+      "name": "Jaqck Glam"
+    },
+    {
+      "name": "Young Thug"
+    },
+    {
+      "name": "Major Lazer"
+    },
+    {
+      "name": "Wet Leg"
+    },
+    {
+      "name": "Tijuana Panthers"
+    },
+    {
+      "name": "Gabe Real"
+    },
+    {
+      "name": "\"Qlona\" with Pluma was performed in place of \"El Makinón\"."
+    },
+    {
+      "name": "Disclosure"
+    },
+    {
+      "name": "Turnstile"
+    },
+    {
+      "name": "Dijon"
+    },
+    {
+      "name": "Lykke Li"
+    },
+    {
+      "name": "Dabeull"
+    },
+    {
+      "name": "Tiffany Tyson"
+    },
+    {
+      "name": "David Byrne"
+    },
+    {
+      "name": "Labrinth"
+    },
+    {
+      "name": "Sombr"
+    },
+    {
+      "name": "Alex G"
+    },
+    {
+      "name": "Los Hermanos Flores"
+    },
+    {
+      "name": "Blondshell"
+    },
+    {
+      "name": "BigBang"
+    },
+    {
+      "name": "Laufey"
+    },
+    {
+      "name": "Foster the People"
+    },
+    {
+      "name": "Clipse"
+    },
+    {
+      "name": "Gigi Perez"
+    },
+    {
+      "name": "Juicewon"
+    },
+    {
+      "name": "Not for Radio"
+    },
+    {
+      "name": "Hot Mulligan"
+    },
+    {
+      "name": "Cachiruja & Loojan"
+    },
+    {
+      "name": "Ninajirachi"
+    },
+    {
+      "name": "The Two Lips"
+    },
+    {
+      "name": "Fleshwater"
+    },
+    {
+      "name": "Wednesday"
+    },
+    {
+      "name": "Carolina Durante"
+    },
+    {
+      "name": "February"
+    },
+    {
+      "name": "Doom Dave"
+    },
+    {
+      "name": "Mind Enterprises"
+    },
+    {
+      "name": "54 Ultra"
+    },
+    {
+      "name": "Rusowsky"
+    },
+    {
+      "name": "Ceremony"
+    },
+    {
+      "name": "Ecca Vandal"
+    },
+    {
+      "name": "Freak Slug"
+    },
+    {
+      "name": "Die Spitz"
+    },
+    {
+      "name": "Triste Juventud"
+    },
+    {
+      "name": "French Police"
+    },
+    {
+      "name": "Drain"
+    },
+    {
+      "name": "RØZ"
+    },
+    {
+      "name": "Los Retros"
+    },
+    {
+      "name": "Jane Remover"
+    },
+    {
+      "name": "Model/Actriz"
+    },
+    {
+      "name": "Glitterer"
+    },
+    {
+      "name": "Panda and Chom"
+    },
+    {
+      "name": "Creepy Nuts"
+    },
+    {
+      "name": "Joost Klein"
+    },
+    {
+      "name": "Holly Humberstone"
+    },
+    {
+      "name": "Fakemink"
+    },
+    {
+      "name": "CMAT"
+    },
+    {
+      "name": "Joyce Manor"
+    },
+    {
+      "name": "NewDad"
+    },
+    {
+      "name": "Bob Baker Marionettes"
+    },
+    {
+      "name": "Cahuilla Bird Singers and Dancers"
+    },
+    {
+      "name": "Morat"
+    },
+    {
+      "name": "Bia"
+    },
+    {
+      "name": "Davido"
+    },
+    {
+      "name": "Geese"
+    },
+    {
+      "name": "Luísa Sonza"
+    },
+    {
+      "name": "Whatmore"
+    },
+    {
+      "name": "Noga Erez"
+    },
+    {
+      "name": "The Rapture"
+    },
+    {
+      "name": "Tomora"
+    },
+    {
+      "name": "Black Flag"
+    },
+    {
+      "name": "Oklou"
+    },
+    {
+      "name": "Cobrah"
+    },
+    {
+      "name": "The Chats"
+    },
+    {
+      "name": "Flowerovlove"
+    },
+    {
+      "name": "Blood Orange"
+    },
+    {
+      "name": "Ethel Cain"
+    },
+    {
+      "name": "Moby"
+    },
+    {
+      "name": "Devo"
+    },
+    {
+      "name": "Central Cee"
+    },
+    {
+      "name": "Bini"
+    },
+    {
+      "name": "Slayyyter"
+    },
+    {
+      "name": "Novasoul"
+    },
+    {
+      "name": "Interpol"
+    },
+    {
+      "name": "PinkPantheress"
+    },
+    {
+      "name": "Taemin"
+    },
+    {
+      "name": "Royel Otis"
+    },
+    {
+      "name": "Fujii Kaze"
+    },
+    {
+      "name": "Jack White/Kacey Musgraves"
+    },
+    {
+      "name": "FKA Twigs"
+    },
+    {
+      "name": "Iggy Pop"
+    },
+    {
+      "name": "Suicidal Tendencies"
+    },
+    {
+      "name": "Little Simz"
+    },
+    {
+      "name": "Samia"
+    },
+    {
+      "name": "wydeflower"
+    },
+    {
+      "name": "Sexyy Red"
+    },
+    {
+      "name": "Swae Lee"
+    },
+    {
+      "name": "Levity"
+    },
+    {
+      "name": "Katseye"
+    },
+    {
+      "name": "Marlon Hoffstadt"
+    },
+    {
+      "name": "Hugel"
+    },
+    {
+      "name": "Youna"
+    },
+    {
+      "name": "Massio"
+    },
+    {
+      "name": "Worship"
+    },
+    {
+      "name": "Adriatique"
+    },
+    {
+      "name": "Rezz"
+    },
+    {
+      "name": "Nine Inch Noize"
+    },
+    {
+      "name": "Yousuke Yukimatsu"
+    },
+    {
+      "name": "Hamdi"
+    },
+    {
+      "name": "Zulan"
+    },
+    {
+      "name": "TEED"
+    },
+    {
+      "name": "Seek-One"
+    },
+    {
+      "name": "Kaskade"
+    },
+    {
+      "name": "Subtronics"
+    },
+    {
+      "name": "Mochakk"
+    },
+    {
+      "name": "Duke Dumont"
+    },
+    {
+      "name": "Bunt."
+    },
+    {
+      "name": "Girl Math"
+    },
+    {
+      "name": "Loboman"
+    },
+    {
+      "name": "Gordo"
+    },
+    {
+      "name": "Max Styler"
+    },
+    {
+      "name": "Max Dean and Luke Dean"
+    },
+    {
+      "name": "Prospa"
+    },
+    {
+      "name": "Kettama"
+    },
+    {
+      "name": "Rossi and Chloé Caillet"
+    },
+    {
+      "name": "Groove Armada"
+    },
+    {
+      "name": "Arodes"
+    },
+    {
+      "name": "Jessica Branka"
+    },
+    {
+      "name": "Sahar Z"
+    },
+    {
+      "name": "Armin van Buuren and Adam Beyer"
+    },
+    {
+      "name": "Boys Noize"
+    },
+    {
+      "name": "Bedouin"
+    },
+    {
+      "name": "Sosa"
+    },
+    {
+      "name": "Ben Sterling"
+    },
+    {
+      "name": "Mahmut Orhan"
+    },
+    {
+      "name": "Riordan"
+    },
+    {
+      "name": "Genesi"
+    },
+    {
+      "name": "Yamagucci"
+    },
+    {
+      "name": "Green Velvet and Ayybo"
+    },
+    {
+      "name": "WhoMadeWho"
+    },
+    {
+      "name": "Röyksopp"
+    },
+    {
+      "name": "Carlita and Josh Baker"
+    },
+    {
+      "name": "Mëstiza"
+    },
+    {
+      "name": "&friends"
+    },
+    {
+      "name": "Azzeca"
+    },
+    {
+      "name": "Le Yora"
+    },
+    {
+      "name": "PAWSA"
+    },
+    {
+      "name": "Deep Dish"
+    },
+    {
+      "name": "Tiga"
+    },
+    {
+      "name": "David Guetta"
+    },
+    {
+      "name": "Afrojack and Shimza"
+    },
+    {
+      "name": "Joezi"
+    },
+    {
+      "name": "DJ Snake and Knock2"
+    },
+    {
+      "name": "DJ Snake, RL Grime and Flosstradamus"
+    },
+    {
+      "name": "Madeon"
+    },
+    {
+      "name": "Devault"
+    },
+    {
+      "name": "Fatboy Slim"
+    },
+    {
+      "name": "Joy Anonymous"
+    },
+    {
+      "name": "Jazzy"
+    }
+  ]
+}

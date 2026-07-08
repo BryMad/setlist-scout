@@ -284,8 +284,8 @@ export interface FestivalArtistData {
   songs: Array<{ key: string; title: string; pct: number; uri: string | null }>;
 }
 
-const FESTIVAL_ARTIST_TTL_S = 24 * 60 * 60;
-const FESTIVAL_SONG_BUDGET = 20;
+const FESTIVAL_ARTIST_TTL_S = 7 * 24 * 60 * 60; // weekly refresh cadence
+const FESTIVAL_SONG_BUDGET = 40; // "everything recent" depth pulls the full budget
 
 /**
  * One festival lineup slot, end to end: name → Spotify identity (image,
@@ -295,7 +295,7 @@ const FESTIVAL_SONG_BUDGET = 20;
  * warm festival page costs one Redis read per artist.
  */
 export async function festivalArtist(lineupName: string): Promise<FestivalArtistData> {
-  const cacheKey = `v2:festartist1:${normName(lineupName)}`;
+  const cacheKey = `v2:festartist2:${normName(lineupName)}`;
   const cached = await cacheGet<FestivalArtistData>(cacheKey);
   if (cached) return cached;
 

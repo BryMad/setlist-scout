@@ -15,16 +15,15 @@ const CONCURRENCY = 4;
 type ActState = { status: "loading" } | { status: "error" } | FestivalArtistData;
 
 const DEPTHS = [
-  { key: "1", label: "The lock", per: "1 song each" },
-  { key: "3", label: "Top 3", per: "3 songs each" },
-  { key: "5", label: "Top 5", per: "5 songs each" },
-  { key: "likely", label: "Everything likely", per: "all songs ≥40%" },
+  { key: "3", label: "Top 3 per artist", per: "their 3 most-played songs" },
+  { key: "10", label: "Top 10 per artist", per: "their 10 most-played songs" },
+  { key: "all", label: "Everything recent", per: "every song from their recent shows (up to 40 each)" },
 ] as const;
 
 type DepthKey = (typeof DEPTHS)[number]["key"];
 
 function songsForDepth(data: FestivalArtistData, depth: DepthKey) {
-  if (depth === "likely") return data.songs.filter((song) => song.pct >= 40);
+  if (depth === "all") return data.songs;
   return data.songs.slice(0, Number(depth));
 }
 
@@ -103,6 +102,9 @@ export default function FestivalBuilder({ festival }: { festival: Festival }) {
             {d.label}
           </button>
         ))}
+        <span className="font-mono text-xs text-zinc-600">
+          {DEPTHS.find((d) => d.key === depth)?.per}
+        </span>
       </nav>
 
       {/* save panel */}

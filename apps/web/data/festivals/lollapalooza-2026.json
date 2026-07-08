@@ -3,26 +3,705 @@
   "name": "Lollapalooza",
   "year": 2026,
   "dates": "Jul 30 – Aug 2, 2026",
+  "endsOn": "2026-08-02",
   "location": "Grant Park, Chicago",
+  "source": "wikipedia:List of Lollapalooza lineups by year#2026 (2026-07-08)",
   "lineup": [
-    { "name": "Charli XCX", "tier": "headliner" },
-    { "name": "Tate McRae", "tier": "headliner" },
-    { "name": "Lorde", "tier": "headliner" },
-    { "name": "Olivia Dean", "tier": "headliner" },
-    { "name": "John Summit", "tier": "headliner" },
-    { "name": "Jennie", "tier": "headliner" },
-    { "name": "The Smashing Pumpkins", "tier": "headliner" },
-    { "name": "The xx", "tier": "headliner" },
-    { "name": "Lil Uzi Vert" },
-    { "name": "Sombr" },
-    { "name": "The Neighbourhood" },
-    { "name": "Yungblud" },
-    { "name": "beabadoobee" },
-    { "name": "Ethel Cain" },
-    { "name": "Empire of the Sun" },
-    { "name": "Major Lazer" },
-    { "name": "aespa" },
-    { "name": "The Chainsmokers" },
-    { "name": "Disco Lines" }
+    {
+      "name": "Lorde",
+      "day": "Thursday",
+      "tier": "headliner"
+    },
+    {
+      "name": "John Summit",
+      "day": "Thursday",
+      "tier": "headliner"
+    },
+    {
+      "name": "Charli xcx",
+      "day": "Friday",
+      "tier": "headliner"
+    },
+    {
+      "name": "The Smashing Pumpkins",
+      "day": "Friday",
+      "tier": "headliner"
+    },
+    {
+      "name": "Olivia Dean",
+      "day": "Saturday",
+      "tier": "headliner"
+    },
+    {
+      "name": "Jennie",
+      "day": "Saturday",
+      "tier": "headliner"
+    },
+    {
+      "name": "Tate McRae",
+      "day": "Sunday",
+      "tier": "headliner"
+    },
+    {
+      "name": "The xx",
+      "day": "Sunday",
+      "tier": "headliner"
+    },
+    {
+      "name": "Sombr",
+      "day": "Thursday"
+    },
+    {
+      "name": "Empire of the Sun",
+      "day": "Thursday"
+    },
+    {
+      "name": "Wet Leg",
+      "day": "Thursday"
+    },
+    {
+      "name": "Worship",
+      "day": "Thursday"
+    },
+    {
+      "name": "Blood Orange",
+      "day": "Thursday"
+    },
+    {
+      "name": "5 Seconds of Summer",
+      "day": "Thursday"
+    },
+    {
+      "name": "Kettama",
+      "day": "Thursday"
+    },
+    {
+      "name": "Viagra Boys",
+      "day": "Thursday"
+    },
+    {
+      "name": "Audrey Hobert",
+      "day": "Thursday"
+    },
+    {
+      "name": "Snow Strippers",
+      "day": "Thursday"
+    },
+    {
+      "name": "Boris Brejcha",
+      "day": "Thursday"
+    },
+    {
+      "name": "Paris Paloma",
+      "day": "Thursday"
+    },
+    {
+      "name": "Little Simz",
+      "day": "Thursday"
+    },
+    {
+      "name": "CMAT",
+      "day": "Thursday"
+    },
+    {
+      "name": "Boys Noize",
+      "day": "Thursday"
+    },
+    {
+      "name": "Between Friends",
+      "day": "Thursday"
+    },
+    {
+      "name": "MPH",
+      "day": "Thursday"
+    },
+    {
+      "name": "Amble",
+      "day": "Thursday"
+    },
+    {
+      "name": "Kingfishr",
+      "day": "Thursday"
+    },
+    {
+      "name": "Ninajirachi",
+      "day": "Thursday"
+    },
+    {
+      "name": "Haute and Freddy",
+      "day": "Thursday"
+    },
+    {
+      "name": "Bella Kay",
+      "day": "Thursday"
+    },
+    {
+      "name": "Marlon Funaki",
+      "day": "Thursday"
+    },
+    {
+      "name": "Devault",
+      "day": "Thursday"
+    },
+    {
+      "name": "SB19",
+      "day": "Thursday"
+    },
+    {
+      "name": "Ecca Vandal",
+      "day": "Thursday"
+    },
+    {
+      "name": "Bad Nerves",
+      "day": "Thursday"
+    },
+    {
+      "name": "Asha Banks",
+      "day": "Thursday"
+    },
+    {
+      "name": "Faouzia",
+      "day": "Thursday"
+    },
+    {
+      "name": "Evening Elephants",
+      "day": "Thursday"
+    },
+    {
+      "name": "Pearly Drops",
+      "day": "Thursday"
+    },
+    {
+      "name": "Bixby",
+      "day": "Thursday"
+    },
+    {
+      "name": "Penelope Road",
+      "day": "Thursday"
+    },
+    {
+      "name": "Know Good",
+      "day": "Thursday"
+    },
+    {
+      "name": "Elizabeth Nichols",
+      "day": "Thursday"
+    },
+    {
+      "name": "Klo",
+      "day": "Thursday"
+    },
+    {
+      "name": "The Braymores",
+      "day": "Thursday"
+    },
+    {
+      "name": "Chalk",
+      "day": "Thursday"
+    },
+    {
+      "name": "Simon Grossmann",
+      "day": "Thursday"
+    },
+    {
+      "name": "Kim Theory",
+      "day": "Thursday"
+    },
+    {
+      "name": "Lil Uzi Vert",
+      "day": "Friday"
+    },
+    {
+      "name": "Yungblud",
+      "day": "Friday"
+    },
+    {
+      "name": "Major Lazer",
+      "day": "Friday"
+    },
+    {
+      "name": "Not for Radio",
+      "day": "Friday"
+    },
+    {
+      "name": "Zara Larsson",
+      "day": "Friday"
+    },
+    {
+      "name": "Freddie Gibbs",
+      "day": "Friday"
+    },
+    {
+      "name": "Suki Waterhouse",
+      "day": "Friday"
+    },
+    {
+      "name": "I-dle",
+      "day": "Friday"
+    },
+    {
+      "name": "Mustard",
+      "day": "Friday"
+    },
+    {
+      "name": "Oklou",
+      "day": "Friday"
+    },
+    {
+      "name": "HorsegiirL",
+      "day": "Friday"
+    },
+    {
+      "name": "The Story So Far",
+      "day": "Friday"
+    },
+    {
+      "name": "Loathe",
+      "day": "Friday"
+    },
+    {
+      "name": "Nettspend",
+      "day": "Friday"
+    },
+    {
+      "name": "Sidepiece",
+      "day": "Friday"
+    },
+    {
+      "name": "Skye Newman",
+      "day": "Friday"
+    },
+    {
+      "name": "Notion",
+      "day": "Friday"
+    },
+    {
+      "name": "RØZ",
+      "day": "Friday"
+    },
+    {
+      "name": "Balu Brigada",
+      "day": "Friday"
+    },
+    {
+      "name": "LYNY",
+      "day": "Friday"
+    },
+    {
+      "name": "Mother Mother",
+      "day": "Friday"
+    },
+    {
+      "name": "Julia Wolf",
+      "day": "Friday"
+    },
+    {
+      "name": "Slayyyter",
+      "day": "Friday"
+    },
+    {
+      "name": "Claire Rosinkranz",
+      "day": "Friday"
+    },
+    {
+      "name": "54 Ultra",
+      "day": "Friday"
+    },
+    {
+      "name": "High Vis",
+      "day": "Friday"
+    },
+    {
+      "name": "Finn Wolfhard",
+      "day": "Friday"
+    },
+    {
+      "name": "Avello",
+      "day": "Friday"
+    },
+    {
+      "name": "PartyOf2",
+      "day": "Friday"
+    },
+    {
+      "name": "The Army, The Navy",
+      "day": "Friday"
+    },
+    {
+      "name": "Love Spells",
+      "day": "Friday"
+    },
+    {
+      "name": "Ella Red",
+      "day": "Friday"
+    },
+    {
+      "name": "Paloma Morphy",
+      "day": "Friday"
+    },
+    {
+      "name": "Day We Ran",
+      "day": "Friday"
+    },
+    {
+      "name": "Ivri",
+      "day": "Friday"
+    },
+    {
+      "name": "Ella Boh",
+      "day": "Friday"
+    },
+    {
+      "name": "Bradeazy",
+      "day": "Friday"
+    },
+    {
+      "name": "Emi Grace",
+      "day": "Friday"
+    },
+    {
+      "name": "Beno",
+      "day": "Friday"
+    },
+    {
+      "name": "Chicago Made",
+      "day": "Friday"
+    },
+    {
+      "name": "Valencia Grace",
+      "day": "Friday"
+    },
+    {
+      "name": "Whitney Whitney",
+      "day": "Friday"
+    },
+    {
+      "name": "The Neighbourhood",
+      "day": "Saturday"
+    },
+    {
+      "name": "Ethel Cain",
+      "day": "Saturday"
+    },
+    {
+      "name": "Disco Lines",
+      "day": "Saturday"
+    },
+    {
+      "name": "Leon Thomas",
+      "day": "Saturday"
+    },
+    {
+      "name": "Clipse",
+      "day": "Saturday"
+    },
+    {
+      "name": "Geese",
+      "day": "Saturday"
+    },
+    {
+      "name": "Alison Wonderland",
+      "day": "Saturday"
+    },
+    {
+      "name": "DJ Trixie Mattel",
+      "day": "Saturday"
+    },
+    {
+      "name": "Bbno$",
+      "day": "Saturday"
+    },
+    {
+      "name": "Kwn",
+      "day": "Saturday"
+    },
+    {
+      "name": "Sienna Spiro",
+      "day": "Saturday"
+    },
+    {
+      "name": "Max Styler",
+      "day": "Saturday"
+    },
+    {
+      "name": "Spacey Jane",
+      "day": "Saturday"
+    },
+    {
+      "name": "Wolf Alice",
+      "day": "Saturday"
+    },
+    {
+      "name": "Whethan",
+      "day": "Saturday"
+    },
+    {
+      "name": "Cortis",
+      "day": "Saturday"
+    },
+    {
+      "name": "Cameron Whitcomb",
+      "day": "Saturday"
+    },
+    {
+      "name": "Ayybo",
+      "day": "Saturday"
+    },
+    {
+      "name": "Khamari",
+      "day": "Saturday"
+    },
+    {
+      "name": "Quadeca",
+      "day": "Saturday"
+    },
+    {
+      "name": "Momma",
+      "day": "Saturday"
+    },
+    {
+      "name": "Frost Children",
+      "day": "Saturday"
+    },
+    {
+      "name": "Goldie Boutilier",
+      "day": "Saturday"
+    },
+    {
+      "name": "Die Spitz",
+      "day": "Saturday"
+    },
+    {
+      "name": "Lucy Bedroque",
+      "day": "Saturday"
+    },
+    {
+      "name": "Omnom",
+      "day": "Saturday"
+    },
+    {
+      "name": "Jim Legxacy",
+      "day": "Saturday"
+    },
+    {
+      "name": "Chezile",
+      "day": "Saturday"
+    },
+    {
+      "name": "Jae Stephens",
+      "day": "Saturday"
+    },
+    {
+      "name": "Ryman",
+      "day": "Saturday"
+    },
+    {
+      "name": "Villanelle",
+      "day": "Saturday"
+    },
+    {
+      "name": "Sunday (1994)",
+      "day": "Saturday"
+    },
+    {
+      "name": "MC4D",
+      "day": "Saturday"
+    },
+    {
+      "name": "Chace",
+      "day": "Saturday"
+    },
+    {
+      "name": "Calder Allen",
+      "day": "Saturday"
+    },
+    {
+      "name": "Nat Myers",
+      "day": "Saturday"
+    },
+    {
+      "name": "Ink",
+      "day": "Saturday"
+    },
+    {
+      "name": "Peace Control",
+      "day": "Saturday"
+    },
+    {
+      "name": "The Creekers",
+      "day": "Saturday"
+    },
+    {
+      "name": "Next of Kin",
+      "day": "Saturday"
+    },
+    {
+      "name": "Chicago Youth Symphony Orchestras",
+      "day": "Saturday"
+    },
+    {
+      "name": "Turnstile",
+      "day": "Sunday"
+    },
+    {
+      "name": "Beabadoobee",
+      "day": "Sunday"
+    },
+    {
+      "name": "Aespa",
+      "day": "Sunday"
+    },
+    {
+      "name": "The Chainsmokers",
+      "day": "Sunday"
+    },
+    {
+      "name": "Muna",
+      "day": "Sunday"
+    },
+    {
+      "name": "Hot Mulligan",
+      "day": "Sunday"
+    },
+    {
+      "name": "Yoasobi",
+      "day": "Sunday"
+    },
+    {
+      "name": "Ado",
+      "day": "Sunday"
+    },
+    {
+      "name": "Jade",
+      "day": "Sunday"
+    },
+    {
+      "name": "Eli Brown",
+      "day": "Sunday"
+    },
+    {
+      "name": "Duke Dumont",
+      "day": "Sunday"
+    },
+    {
+      "name": "Fakemink",
+      "day": "Sunday"
+    },
+    {
+      "name": "Dombresky",
+      "day": "Sunday"
+    },
+    {
+      "name": "Monaleo",
+      "day": "Sunday"
+    },
+    {
+      "name": "Adéla",
+      "day": "Sunday"
+    },
+    {
+      "name": "Riordan",
+      "day": "Sunday"
+    },
+    {
+      "name": "Wunderhorse",
+      "day": "Sunday"
+    },
+    {
+      "name": "Amber Mark",
+      "day": "Sunday"
+    },
+    {
+      "name": "Westend",
+      "day": "Sunday"
+    },
+    {
+      "name": "Destin Conrad",
+      "day": "Sunday"
+    },
+    {
+      "name": "Inji",
+      "day": "Sunday"
+    },
+    {
+      "name": "Waylon Wyatt",
+      "day": "Sunday"
+    },
+    {
+      "name": "Water from Your Eyes",
+      "day": "Sunday"
+    },
+    {
+      "name": "Los Retros",
+      "day": "Sunday"
+    },
+    {
+      "name": "Vandelux",
+      "day": "Sunday"
+    },
+    {
+      "name": "New Constellations",
+      "day": "Sunday"
+    },
+    {
+      "name": "Cruz Beckham and the Breakers",
+      "day": "Sunday"
+    },
+    {
+      "name": "The Bends",
+      "day": "Sunday"
+    },
+    {
+      "name": "After",
+      "day": "Sunday"
+    },
+    {
+      "name": "Whatmore",
+      "day": "Sunday"
+    },
+    {
+      "name": "Porch Light",
+      "day": "Sunday"
+    },
+    {
+      "name": "Easy Honey",
+      "day": "Sunday"
+    },
+    {
+      "name": "Jackie Hollander",
+      "day": "Sunday"
+    },
+    {
+      "name": "Stella Lefty",
+      "day": "Sunday"
+    },
+    {
+      "name": "Justine Skye",
+      "day": "Sunday"
+    },
+    {
+      "name": "Will Swinton",
+      "day": "Sunday"
+    },
+    {
+      "name": "Sunshine",
+      "day": "Sunday"
+    },
+    {
+      "name": "Case Oats",
+      "day": "Sunday"
+    },
+    {
+      "name": "Surfing for Daisy",
+      "day": "Sunday"
+    },
+    {
+      "name": "Snacktime",
+      "day": "Sunday"
+    },
+    {
+      "name": "Zack Martino",
+      "day": "Sunday"
+    }
   ]
 }
