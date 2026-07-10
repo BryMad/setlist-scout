@@ -127,7 +127,12 @@ export default function ArtistSearch({
   const isHero = variant === "hero";
 
   return (
-    <div ref={rootRef} className={`relative ${isHero ? "w-full" : "w-56 sm:w-80"}`}>
+    <div
+      ref={rootRef}
+      // header variant flexes inside the nav row so search + About + login
+      // fit a phone width; caps at the old w-56/w-80 on wider screens
+      className={`relative ${isHero ? "w-full" : "w-full max-w-56 sm:max-w-80"}`}
+    >
       <input
         autoFocus={autoFocus}
         value={query}

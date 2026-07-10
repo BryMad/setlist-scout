@@ -5,23 +5,23 @@ the point is that each idea is written down with enough context to pick it up la
 
 ---
 
-## 0. TOP PRIORITY — Info/About page + login state in the nav
+## 0. DONE 2026-07-10 — Info/About page + login state in the nav ✓
 
-Port the v1 site's informational surface and make auth visible:
+Shipped:
 
-1. **About/info page** (`/about`): what the site does and how it works —
-   prediction from setlist.fm data, Spotify matching, the confidence bands —
-   plus data-source credits and the not-affiliated-with-Spotify disclaimer.
-   Port v1's About copy as the base, update for v2's mechanics. Link it from
-   the header and/or footer. (Privacy/Terms/EUA are already live at `/legal`,
-   ported verbatim — but the §6 note stands: privacy copy still describes
-   v1's 24-hour sessions and needs a v2 pass — fold that into this work.)
-2. **Spotify login/logout in the nav bar** (v1 parity): header shows
-   "Log in with Spotify" when signed out; when signed in, show state +
-   a logout control. Mechanics: the `sp_session` cookie is HttpOnly, so the
-   header needs a tiny `/api/me` status endpoint (client fetch on mount) and
-   a `/auth/logout` that clears the cookie — per the EUA promise, logging
-   out removes the user's data from our side.
+1. **`/about`** — v1's About + Contact copy merged and updated for v2's
+   mechanics (Spotify-powered search, likelihood ranking, Relive, playlist
+   scope), fan-data caveat + contact email, privacy summary, independence
+   disclaimer. Linked from the header (sm+) and the footer.
+2. **Nav auth (v1 parity)** — `/api/me` status endpoint (cookie is HttpOnly),
+   `POST /auth/logout` clears the cookie via `clearSession()` (the cookie is
+   the only place user data lives, so deletion = the EUA's "removes your
+   data" promise), `AuthControls` in the header: green "Log in with Spotify"
+   pill signed out, "· Spotify / Log out" signed in.
+3. **Legal copy v2 pass** (the §6 note): privacy policy + ConsentGate
+   summaries no longer claim v1's encrypted 24-hour server-side sessions —
+   now 30-day HttpOnly browser cookie, no server-side copy, no Spotify user
+   ID stored, consent record (2yr) disclosed. Effective date bumped.
 
 ---
 
@@ -334,7 +334,12 @@ against the dark surface. The cool→hot spectrum is the product story: cool col
 
 ## 4. UX debt (small, known)
 
-- Auto-resume the playlist save after the OAuth round-trip (currently two clicks).
+- ~~Auto-resume the playlist save after the OAuth round-trip~~ — done 2026-07-10:
+  sessionStorage marker set before the 401 redirect, consumed on remount (same
+  path, <5 min, uris complete — the festival builder's progressive list is
+  deliberately excluded). Same pass: `show_dialog=true` on the first login
+  after an explicit logout (`sp_show_dialog` marker cookie, cleared by the
+  callback) so logout no longer feels fake.
 - Visible error message on auth failure (`/?auth=failed` is silent).
 - Show page → back-link to its tour (pass artist mbid through the link).
 - Live crawl progress in the UI — the client already emits `onProgress`
@@ -370,8 +375,8 @@ against the dark surface. The cool→hot spectrum is the product story: cool col
   wrong at large).
 - Redis quota watch — gzip is in place (~18× smaller); consider an LRU cap if the
   shared instance gets tight.
-- Port Privacy / Terms / EUA consent flow from the old site (Spotify integration
-  requirement).
+- ~~Port Privacy / Terms / EUA consent flow from the old site~~ — done: `/legal`
+  + ConsentGate shipped earlier; copy updated for v2 mechanics 2026-07-10 (§0).
 - Rewrite README + CLAUDE.md for the v2 architecture.
 - Domain cutover; retire old frontend/backend.
 

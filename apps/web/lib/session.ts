@@ -31,6 +31,17 @@ export function writeSession(response: NextResponse, session: SpotifySession): v
   });
 }
 
+/** Logout = delete the cookie. It's the only place user data lives (EUA promise). */
+export function clearSession(response: NextResponse): void {
+  response.cookies.set(SESSION_COOKIE, "", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 0,
+  });
+}
+
 export function redirectUriFor(request: NextRequest): string {
   return (
     process.env.SPOTIFY_REDIRECT_URI ??

@@ -322,7 +322,14 @@ export class SpotifyClient {
 
   // --- user OAuth + playlists (authorization code flow) --------------------
 
-  buildAuthorizeUrl(options: { redirectUri: string; state: string; scopes?: string[] }): string {
+  buildAuthorizeUrl(options: {
+    redirectUri: string;
+    state: string;
+    scopes?: string[];
+    /** Force Spotify's approval screen even for an already-authorized user —
+     *  otherwise the redirect bounces back silently. Used after explicit logout. */
+    showDialog?: boolean;
+  }): string {
     const params = new URLSearchParams({
       response_type: "code",
       client_id: this.clientId,
@@ -331,6 +338,7 @@ export class SpotifyClient {
       // the registered Spotify app is only authorized for the public scope
       scope: (options.scopes ?? ["playlist-modify-public"]).join(" "),
     });
+    if (options.showDialog) params.set("show_dialog", "true");
     return `${this.accountsUrl}/authorize?${params}`;
   }
 

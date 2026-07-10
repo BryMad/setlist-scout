@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface SavePlaylistProps {
   playlistName: string;
@@ -8,9 +8,45 @@ interface SavePlaylistProps {
   uris: string[];
 }
 
+/** sessionStorage marker: a save that got interrupted by the OAuth round-trip. */
+const RESUME_KEY = "setlistscout:resume-save";
+
 export default function SavePlaylist({ playlistName, description, uris }: SavePlaylistProps) {
   const [state, setState] = useState<"idle" | "saving" | "done" | "error">("idle");
   const [playlistUrl, setPlaylistUrl] = useState<string | null>(null);
+
+  // Mode/depth switches swap the props but React keeps this component (and its
+  // "saved ✓") alive — reset whenever the playlist we'd save is a different one.
+  const contentKey = `${playlistName}::${uris.join(",")}`;
+  const lastContentKey = useRef(contentKey);
+  useEffect(() => {
+    if (lastContentKey.current === contentKey) return;
+    lastContentKey.current = contentKey;
+    setState("idle");
+    setPlaylistUrl(null);
+  }, [contentKey]);
+
+  // Auto-resume after login: if a save on THIS page was interrupted by the
+  // OAuth redirect, finish it now instead of making the user click twice.
+  // Requires uris to be complete at mount — true on server-rendered pages;
+  // the festival builder mounts with an empty, still-loading list and is
+  // deliberately skipped rather than saving a partial playlist.
+  useEffect(() => {
+    let marker: { path?: string; at?: number } | null = null;
+    try {
+      const raw = sessionStorage.getItem(RESUME_KEY);
+      if (!raw) return;
+      sessionStorage.removeItem(RESUME_KEY);
+      marker = JSON.parse(raw) as { path?: string; at?: number };
+    } catch {
+      return;
+    }
+    const here = window.location.pathname + window.location.search;
+    const fresh = Date.now() - (marker?.at ?? 0) < 5 * 60_000;
+    if (marker?.path === here && fresh && uris.length > 0) void save();
+    // mount-only: the marker is consumed on first render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function save() {
     setState("saving");
@@ -21,8 +57,13 @@ export default function SavePlaylist({ playlistName, description, uris }: SavePl
         body: JSON.stringify({ name: playlistName, description, uris }),
       });
       if (res.status === 401) {
-        const back = encodeURIComponent(window.location.pathname + window.location.search);
-        window.location.href = `/auth/login?return=${back}`;
+        const path = window.location.pathname + window.location.search;
+        try {
+          sessionStorage.setItem(RESUME_KEY, JSON.stringify({ path, at: Date.now() }));
+        } catch {
+          /* private browsing — user just clicks save again after login */
+        }
+        window.location.href = `/auth/login?return=${encodeURIComponent(path)}`;
         return;
       }
       const data = (await res.json()) as { url?: string };

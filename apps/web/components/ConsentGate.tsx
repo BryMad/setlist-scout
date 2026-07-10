@@ -24,11 +24,10 @@ const EUA_SUMMARY = [
 ];
 
 const PRIVACY_SUMMARY = [
-  "We store only the minimum data needed (Spotify User ID, access tokens)",
+  "We store only the minimum data needed (your Spotify access tokens)",
   'We request only the "playlist-modify-public" scope to create playlists on your behalf',
-  "Authentication data is stored in encrypted sessions that expire after 24 hours",
-  "We use a session cookie to maintain your login state",
-  "Logging out will disconnect your Spotify account and remove your data from our systems",
+  "Login data lives in a secure cookie in your browser — never on our servers — and expires after 30 days",
+  "Logging out will disconnect your Spotify account and remove your data",
   "We do not analyze your listening habits or store search history",
 ];
 

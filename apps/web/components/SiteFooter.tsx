@@ -50,6 +50,10 @@ export default function SiteFooter() {
           Brand Guidelines
         </a>{" "}
         for more info. ·{" "}
+        <a href="/about" className="text-zinc-500 hover:text-zinc-300">
+          About
+        </a>{" "}
+        ·{" "}
         <a href="/legal" className="text-zinc-500 hover:text-zinc-300">
           Privacy &amp; Terms
         </a>

@@ -2,8 +2,10 @@ import Link from "next/link";
 
 /**
  * Legal page: End User Agreement + Privacy Policy.
- * Copy ported verbatim from v1 (frontend/src/pages/Legal.jsx) — only the
- * presentation is new. Supports ?tab=1 deep links like v1 did.
+ * Copy ported from v1 (frontend/src/pages/Legal.jsx), then updated 2026-07 for
+ * v2's mechanics: tokens live in a 30-day HttpOnly browser cookie instead of
+ * v1's 24-hour server-side sessions, and we never store the Spotify user ID.
+ * Supports ?tab=1 deep links like v1 did.
  */
 
 const H2 = ({ children }: { children: React.ReactNode }) => (
@@ -41,7 +43,7 @@ export default async function LegalPage({ searchParams }: PageProps) {
   return (
     <main className="mx-auto max-w-3xl px-6 py-10">
       <h1 className="text-3xl font-semibold tracking-tight">Legal Information</h1>
-      <p className="mt-2 text-sm text-zinc-500">Effective Date: May 13, 2025</p>
+      <p className="mt-2 text-sm text-zinc-500">Effective Date: July 10, 2026</p>
 
       <nav className="mt-6 inline-flex rounded-lg border border-zinc-800 bg-zinc-900 p-1">
         {["Terms of Service", "Privacy Policy"].map((label, i) => (
@@ -243,21 +245,21 @@ export default async function LegalPage({ searchParams }: PageProps) {
           <UL
             items={[
               <>
-                <strong>Spotify User ID</strong>: Stored temporarily to identify your
-                account when creating playlists
-              </>,
-              <>
-                <strong>Spotify Access Tokens</strong>: Stored securely to perform
-                authorized actions on your behalf
-              </>,
-              <>
-                <strong>Session Information</strong>: Stored in encrypted server-side
-                sessions
+                <strong>Spotify Access Tokens</strong>: Stored in a secure, HttpOnly
+                cookie in your browser to perform authorized actions on your behalf.
+                We keep no server-side copy — your tokens never touch a database of
+                ours
               </>,
               <>
                 <strong>Spotify API Scopes</strong>: We request only the
                 &quot;playlist-modify-public&quot; scope, which allows us to create
                 public playlists on your behalf
+              </>,
+              <>
+                <strong>Consent Record</strong>: When you accept this Privacy Policy
+                and the End User Agreement, we store a record of that consent (date,
+                IP address, and browser type) for up to two years as proof of
+                acceptance
               </>,
             ]}
           />
@@ -287,7 +289,9 @@ export default async function LegalPage({ searchParams }: PageProps) {
           <H3>Cookies and Similar Technologies</H3>
           <P>
             Our service uses a session cookie to maintain your logged-in state. This
-            cookie is deleted when you log out or expires after 24 hours.
+            cookie is deleted when you log out or expires after 30 days. It is
+            HttpOnly (not readable by scripts) and, in production, only ever sent
+            over HTTPS.
           </P>
           <P>
             When you authenticate with Spotify, their authentication service may
@@ -337,9 +341,11 @@ export default async function LegalPage({ searchParams }: PageProps) {
 
           <H2>Data Retention</H2>
           <P>
-            All authentication data is stored in encrypted sessions that expire after
-            24 hours. We do not maintain databases of user information or activity.
-            You can delete your session data at any time by logging out.
+            All authentication data lives in a cookie in your own browser and
+            expires after 30 days. We do not maintain databases of user information
+            or activity — the only record we keep server-side is your consent to
+            these terms. You can delete your session data at any time by logging
+            out.
           </P>
           <P>
             <strong>Important</strong>: Logging out of Setlist Scout will disconnect

@@ -27,5 +27,6 @@ export async function GET(request: NextRequest) {
     expiresAt: Date.now() + tokens.expires_in * 1000,
   });
   response.cookies.delete("sp_oauth");
+  response.cookies.delete("sp_show_dialog"); // logged back in — next login can be silent again
   return response;
 }
