@@ -5,7 +5,8 @@ import { ShowPicker } from "@/components/ShowCards";
 import SongList from "@/components/SongList";
 import { CONFIDENCE_STYLE } from "@/components/confidence";
 import { getAllShows, matchTracks, runPrediction } from "@/lib/data";
-import type { Show } from "@setlistscout/engine";
+import { NO_TOUR_LABEL, NO_TOUR_SLUG } from "@/lib/relive";
+import { isUntaggedShow, type PredictMode, type Show } from "@setlistscout/engine";
 import type { MatchedTrack } from "@setlistscout/clients";
 
 // serverless budget: may trigger the full-history crawl when the cache is cold
@@ -21,7 +22,10 @@ interface PageProps {
 
 export default async function TourPage({ params, searchParams }: PageProps) {
   const { mbid, tour } = await params;
-  const tourName = decodeURIComponent(tour);
+  const slug = decodeURIComponent(tour);
+  // the catch-all bucket for shows with no tour attribution (one-offs, specials)
+  const isNoTour = slug === NO_TOUR_SLUG;
+  const tourName = isNoTour ? NO_TOUR_LABEL : slug;
   const sp = await searchParams;
   const name = typeof sp.name === "string" ? sp.name : "Artist";
   const view = sp.view === "shows" ? "shows" : "played";
@@ -29,10 +33,12 @@ export default async function TourPage({ params, searchParams }: PageProps) {
 
   const shows = await getAllShows(mbid);
   const tourShows = shows.filter(
-    (show) => show.tourName === tourName && show.songCount > 0
+    (show) =>
+      (isNoTour ? isUntaggedShow(show) : show.tourName === slug) &&
+      show.songCount > 0
   );
 
-  const base = `/artist/${mbid}/tour/${encodeURIComponent(tourName)}${query}`;
+  const base = `/artist/${mbid}/tour/${encodeURIComponent(slug)}${query}`;
   const views = [
     { key: "played", label: "What they played", href: base },
     { key: "shows", label: "Pick a show", href: `${base}&view=shows` },
@@ -74,7 +80,9 @@ export default async function TourPage({ params, searchParams }: PageProps) {
       ) : view === "shows" ? (
         <>
           <p className="cascade-in mt-6 text-sm leading-relaxed text-zinc-400 [animation-delay:180ms]">
-            The exact setlist from one night of this tour — pick it below.
+            {isNoTour
+              ? "The exact setlist from one of these shows — pick it below."
+              : "The exact setlist from one night of this tour — pick it below."}
           </p>
           <ShowPicker
             shows={tourShows.map((show) => ({
@@ -88,7 +96,16 @@ export default async function TourPage({ params, searchParams }: PageProps) {
           />
         </>
       ) : (
-        <PlayedView name={name} tourName={tourName} shows={shows} />
+        <PlayedView
+          name={name}
+          tourName={tourName}
+          mode={
+            isNoTour
+              ? { kind: "untagged-shows" }
+              : { kind: "named-tour", tourName: slug }
+          }
+          shows={shows}
+        />
       )}
     </main>
   );
@@ -99,16 +116,19 @@ export default async function TourPage({ params, searchParams }: PageProps) {
 async function PlayedView({
   name,
   tourName,
+  mode,
   shows,
 }: {
   name: string;
   tourName: string;
+  mode: PredictMode;
   shows: Show[];
 }) {
-  const prediction = runPrediction(shows, { kind: "named-tour", tourName });
+  const prediction = runPrediction(shows, mode);
   if (!prediction) {
     return <p className="mt-10 text-zinc-400">No usable setlists recorded for this tour.</p>;
   }
+  const isNoTour = mode.kind === "untagged-shows";
 
   const matches: Map<string, MatchedTrack | null> = await matchTracks(
     name,
@@ -125,8 +145,9 @@ async function PlayedView({
         {/* explicit {" "} — Turbopack's JSX transform drops the space
             between an expression and trailing text that meets a newline */}
         They played about {prediction.typicalSetLength}{" "}
-        songs a night on this tour — below is everything they pulled out,
-        ranked by how often it came up.
+        {isNoTour
+          ? "songs a night at these shows — below is everything they pulled out, ranked by how often it came up."
+          : "songs a night on this tour — below is everything they pulled out, ranked by how often it came up."}
       </p>
 
       <section className="cascade-in mt-4 rounded-xl border border-zinc-800 bg-zinc-900/60 p-5 [animation-delay:240ms]">
@@ -148,8 +169,16 @@ async function PlayedView({
         </ul>
         <div className="mt-4 border-t border-zinc-800 pt-4">
           <SavePlaylist
-            playlistName={`${name} — ${tourName} setlist`}
-            description={`Made with SetlistScout from ${prediction.showsAnalyzed} shows on ${tourName}.`}
+            playlistName={
+              isNoTour
+                ? `${name} — one-off shows setlist`
+                : `${name} — ${tourName} setlist`
+            }
+            description={
+              isNoTour
+                ? `Made with SetlistScout from ${prediction.showsAnalyzed} shows not part of any tour.`
+                : `Made with SetlistScout from ${prediction.showsAnalyzed} shows on ${tourName}.`
+            }
             uris={playlistUris}
           />
         </div>

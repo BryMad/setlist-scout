@@ -1,9 +1,11 @@
-import type { Show } from "./normalize.ts";
+import { isUntaggedShow, type Show } from "./normalize.ts";
 
 /**
  * Tour discovery: aggregate a full show history into a browsable tour list.
  * Ports the old tourExtractor behavior — only shows with actual song data
- * count, junk tour names are dropped, newest tours first.
+ * count, junk tour names are dropped, newest tours first. Shows without tour
+ * attribution get their own summary (summarizeUntagged) so one-offs stay
+ * reachable in the UI instead of vanishing.
  */
 
 export interface TourSummary {
@@ -16,7 +18,11 @@ export interface TourSummary {
   years: string;
 }
 
-const JUNK_TOUR_NAME = /^(no tour info|unknown|miscellaneous|various|n\/a)$/i;
+const yearsLabel = (firstDate: string, lastDate: string): string => {
+  const firstYear = firstDate.slice(0, 4);
+  const lastYear = lastDate.slice(0, 4);
+  return firstYear === lastYear ? firstYear : `${firstYear}–${lastYear}`;
+};
 
 export function summarizeTours(shows: Show[]): TourSummary[] {
   const tours = new Map<
@@ -25,8 +31,8 @@ export function summarizeTours(shows: Show[]): TourSummary[] {
   >();
 
   for (const show of shows) {
-    const name = show.tourName?.trim();
-    if (!name || JUNK_TOUR_NAME.test(name) || show.songCount === 0) continue;
+    if (isUntaggedShow(show) || show.songCount === 0) continue;
+    const name = show.tourName!.trim();
 
     const existing = tours.get(name);
     if (!existing) {
@@ -44,17 +50,36 @@ export function summarizeTours(shows: Show[]): TourSummary[] {
   }
 
   return [...tours.values()]
-    .map((tour) => {
-      const firstYear = tour.firstDate.slice(0, 4);
-      const lastYear = tour.lastDate.slice(0, 4);
-      return {
-        ...tour,
-        years: firstYear === lastYear ? firstYear : `${firstYear}–${lastYear}`,
-      };
-    })
+    .map((tour) => ({ ...tour, years: yearsLabel(tour.firstDate, tour.lastDate) }))
     .sort(
       (a, b) =>
         (a.lastDate < b.lastDate ? 1 : a.lastDate > b.lastDate ? -1 : 0) ||
         b.showCount - a.showCount
     );
+}
+
+export interface UntaggedSummary {
+  showCount: number;
+  firstDate: string;
+  lastDate: string;
+  years: string;
+}
+
+/** The catch-all bucket: shows with songs but no tour attribution. Null when empty. */
+export function summarizeUntagged(shows: Show[]): UntaggedSummary | null {
+  const matched = shows.filter((show) => isUntaggedShow(show) && show.songCount > 0);
+  if (matched.length === 0) return null;
+
+  let firstDate = matched[0]!.date;
+  let lastDate = matched[0]!.date;
+  for (const show of matched) {
+    if (show.date < firstDate) firstDate = show.date;
+    if (show.date > lastDate) lastDate = show.date;
+  }
+  return {
+    showCount: matched.length,
+    firstDate,
+    lastDate,
+    years: yearsLabel(firstDate, lastDate),
+  };
 }

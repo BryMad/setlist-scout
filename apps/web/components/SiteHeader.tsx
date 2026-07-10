@@ -23,7 +23,7 @@ export default function SiteHeader() {
         <nav className="flex shrink-0 items-center gap-4">
           <Link
             href="/about"
-            className={`hidden text-xs transition hover:text-zinc-100 sm:inline ${
+            className={`text-xs transition hover:text-zinc-100 ${
               pathname === "/about" ? "text-zinc-100" : "text-zinc-400"
             }`}
           >

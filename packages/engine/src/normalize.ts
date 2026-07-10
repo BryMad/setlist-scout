@@ -29,6 +29,15 @@ export interface Show {
 export const songKey = (name: string): string =>
   name.trim().toLowerCase().replace(/\s+/g, " ");
 
+/** Tour labels that mean "no tour" — setlist.fm data uses these literally. */
+const JUNK_TOUR_NAME = /^(no tour info|unknown|miscellaneous|various|n\/a)$/i;
+
+/** True when a show has no meaningful tour attribution — one-offs, specials, promos. */
+export function isUntaggedShow(show: Show): boolean {
+  const name = show.tourName?.trim();
+  return !name || JUNK_TOUR_NAME.test(name);
+}
+
 /** "12-05-2026" → "2026-05-12" */
 export function toIsoDate(eventDate: string): string {
   const [day, month, year] = eventDate.split("-");

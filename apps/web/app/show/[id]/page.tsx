@@ -3,6 +3,9 @@ import SongList from "@/components/SongList";
 import { getSetlistById, matchTracks } from "@/lib/data";
 import { scoreSongs, songKey } from "@setlistscout/engine";
 
+// cold show fetch + a page of Spotify track matching — same budget as the artist pages
+export const maxDuration = 60;
+
 interface PageProps {
   params: Promise<{ id: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;

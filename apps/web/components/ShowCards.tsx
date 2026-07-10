@@ -84,7 +84,8 @@ export function TourBrowser({
 }: {
   mbid: string;
   nameQuery: string; // "?name=..." to append to links
-  tours: { name: string; years: string; showCount: number }[];
+  /** slug overrides the URL segment — used by the "No tour info" pseudo-tour. */
+  tours: { name: string; years: string; showCount: number; slug?: string }[];
   shows: LightShow[];
 }) {
   const [query, setQuery] = useState("");
@@ -114,7 +115,7 @@ export function TourBrowser({
               style={{ animationDelay: `${240 + Math.min(index, 12) * 60}ms` }}
             >
               <Link
-                href={`/artist/${mbid}/tour/${encodeURIComponent(tour.name)}${nameQuery}`}
+                href={`/artist/${mbid}/tour/${encodeURIComponent(tour.slug ?? tour.name)}${nameQuery}`}
                 className="flex items-baseline justify-between gap-4 rounded-xl border border-zinc-800 bg-zinc-900/40 px-5 py-4 hover:border-indigo-600 hover:bg-zinc-900"
               >
                 <span className="min-w-0">
@@ -139,7 +140,7 @@ export function TourBrowser({
                 {tourHits.map((tour) => (
                   <li key={tour.name}>
                     <Link
-                      href={`/artist/${mbid}/tour/${encodeURIComponent(tour.name)}${nameQuery}`}
+                      href={`/artist/${mbid}/tour/${encodeURIComponent(tour.slug ?? tour.name)}${nameQuery}`}
                       className="flex items-baseline justify-between gap-4 rounded-xl border border-zinc-800 bg-zinc-900/40 px-5 py-4 hover:border-indigo-600 hover:bg-zinc-900"
                     >
                       <span className="min-w-0">

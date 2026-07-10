@@ -1,7 +1,8 @@
 import SectionNav from "@/components/SectionNav";
 import { TourBrowser } from "@/components/ShowCards";
 import { getAllShows } from "@/lib/data";
-import { summarizeTours } from "@setlistscout/engine";
+import { NO_TOUR_LABEL, NO_TOUR_SLUG } from "@/lib/relive";
+import { summarizeTours, summarizeUntagged } from "@setlistscout/engine";
 
 // serverless budget: a cold full-history crawl of a legacy act takes ~15-25s
 export const maxDuration = 60;
@@ -18,6 +19,7 @@ export default async function ToursPage({ params, searchParams }: PageProps) {
 
   const shows = await getAllShows(mbid);
   const tours = summarizeTours(shows);
+  const untagged = summarizeUntagged(shows);
   const query = `?name=${encodeURIComponent(name)}`;
 
   // slim DTO for the client-side filter — never ship the songs
@@ -44,17 +46,31 @@ export default async function ToursPage({ params, searchParams }: PageProps) {
       <TourBrowser
         mbid={mbid}
         nameQuery={query}
-        tours={tours.map((tour) => ({
-          name: tour.name,
-          years: tour.years,
-          showCount: tour.showCount,
-        }))}
+        tours={[
+          ...tours.map((tour) => ({
+            name: tour.name,
+            years: tour.years,
+            showCount: tour.showCount,
+          })),
+          // catch-all for one-offs/specials — without it, untoured shows
+          // (e.g. a Troubadour one-nighter) are unreachable from the UI
+          ...(untagged
+            ? [
+                {
+                  name: NO_TOUR_LABEL,
+                  slug: NO_TOUR_SLUG,
+                  years: untagged.years,
+                  showCount: untagged.showCount,
+                },
+              ]
+            : []),
+        ]}
         shows={lightShows}
       />
 
-      {tours.length === 0 && (
+      {tours.length === 0 && !untagged && (
         <p className="mt-10 text-zinc-400">
-          setlist.fm has no tour-tagged shows for this artist.
+          setlist.fm has no shows with setlists for this artist.
         </p>
       )}
     </main>

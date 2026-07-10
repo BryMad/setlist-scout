@@ -13,6 +13,7 @@ import {
   selectLatestTour,
   selectNamedTour,
   selectShow,
+  selectUntaggedShows,
   type AutoOptions,
   type AutoSignal,
   type Confidence,
@@ -36,6 +37,7 @@ export type PredictMode =
   | { kind: "latest-tour" }
   | { kind: "last-n-shows"; n?: number }
   | { kind: "named-tour"; tourName: string }
+  | { kind: "untagged-shows" }
   | { kind: "single-show"; showId: string };
 
 export type PredictionSignal =
@@ -155,6 +157,11 @@ function buildExplanation(
     case "last-n-shows":
       lines.push(`Based on the artist's last ${count} shows.`);
       break;
+    case "untagged-shows":
+      lines.push(
+        `Based on ${count} show${count === 1 ? "" : "s"} not tied to any tour — one-offs, festival sets, and specials.`
+      );
+      break;
     case "single-show": {
       const show = selection.shows[0]!;
       const place = [show.venue, show.city].filter(Boolean).join(", ");
@@ -235,6 +242,9 @@ export function predict(shows: Show[], options: PredictOptions): Prediction | nu
       case "named-tour":
         selection = selectNamedTour(quality.kept, mode.tourName);
         break;
+      case "untagged-shows":
+        selection = selectUntaggedShows(quality.kept);
+        break;
       case "single-show":
         // deliberately unfiltered: if the user asks for an exact show,
         // they get it even when it's a short promo set
@@ -262,7 +272,11 @@ export function predict(shows: Show[], options: PredictOptions): Prediction | nu
 
   // Historical views only care about junk inside their window; predictive
   // views also count newer junk (it explains why the data isn't fresher).
-  const includeNewer = mode.kind !== "named-tour" && mode.kind !== "single-show";
+  // the untagged bucket is historical like a named tour: junk only counts inside its window
+  const includeNewer =
+    mode.kind !== "named-tour" &&
+    mode.kind !== "untagged-shows" &&
+    mode.kind !== "single-show";
   const showsExcluded =
     mode.kind === "single-show"
       ? 0

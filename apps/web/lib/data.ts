@@ -12,6 +12,7 @@ import {
   type Show,
 } from "@setlistscout/engine";
 import { cacheGet, cacheGetMany, cacheSet } from "./cache";
+import { cacheKey } from "./cache-keys";
 
 /**
  * Server-side data layer. Only import from server components / route handlers —
@@ -68,8 +69,8 @@ const normName = (value: string) => {
  * (tiny/legacy acts). Identity (mbid) is resolved at selection time.
  */
 export async function suggestArtists(query: string): Promise<ArtistSuggestion[]> {
-  const cacheKey = `v2:suggest:${normName(query)}`;
-  const cached = await cacheGet<ArtistSuggestion[]>(cacheKey);
+  const key = cacheKey.suggest(normName(query));
+  const cached = await cacheGet<ArtistSuggestion[]>(key);
   if (cached) return cached;
 
   const spotifyHits = await spotify.searchArtists(query, 8).catch(() => []);
@@ -93,7 +94,7 @@ export async function suggestArtists(query: string): Promise<ArtistSuggestion[]>
     }));
   }
 
-  await cacheSet(cacheKey, suggestions, 7 * 24 * 60 * 60);
+  await cacheSet(key, suggestions, 7 * 24 * 60 * 60);
   return suggestions;
 }
 
@@ -125,10 +126,8 @@ const INCARNATION_SEPARATOR = /^\s*(?:and|with|y|feat|featuring)\s+/i;
 export async function resolveArtistIncarnations(
   name: string
 ): Promise<ArtistIncarnation[]> {
-  // "3": apostrophe normalization fix — prior version cached empty results
-  // for curly-apostrophe artists (Old 97's, Guns N' Roses, ...)
-  const cacheKey = `v2:incarnations3:${normName(name)}`;
-  const cached = await cacheGet<ArtistIncarnation[]>(cacheKey);
+  const key = cacheKey.incarnations(normName(name));
+  const cached = await cacheGet<ArtistIncarnation[]>(key);
   if (cached) return cached;
 
   const { artists } = await client.searchArtists(name);
@@ -182,47 +181,47 @@ export async function resolveArtistIncarnations(
     });
   }
 
-  await cacheSet(cacheKey, incarnations, 7 * 24 * 60 * 60);
+  await cacheSet(key, incarnations, 7 * 24 * 60 * 60);
   return incarnations;
 }
 
 /** Last ~100 shows — the Predict half's data. */
 export async function getShows(mbid: string): Promise<Show[]> {
-  const cached = await cacheGet<Show[]>(`v2:recent:${mbid}`);
+  const cached = await cacheGet<Show[]>(cacheKey.recentShows(mbid));
   if (cached) return cached;
 
   // a cached full history is a superset — serve the slice for free
-  const history = await cacheGet<Show[]>(`v2:history:${mbid}`);
+  const history = await cacheGet<Show[]>(cacheKey.allShows(mbid));
   if (history) {
     const recent = history.slice(0, 100);
-    await cacheSet(`v2:recent:${mbid}`, recent, RECENT_TTL_S);
+    await cacheSet(cacheKey.recentShows(mbid), recent, RECENT_TTL_S);
     return recent;
   }
 
   const setlists = await client.fetchRecentSetlists(mbid, { maxShows: 100 });
   const shows = setlists.map(toShow);
-  await cacheSet(`v2:recent:${mbid}`, shows, RECENT_TTL_S);
+  await cacheSet(cacheKey.recentShows(mbid), shows, RECENT_TTL_S);
   return shows;
 }
 
 /** Full-history crawl — the Relive half's data. */
 export async function getAllShows(mbid: string): Promise<Show[]> {
-  const cached = await cacheGet<Show[]>(`v2:history:${mbid}`);
+  const cached = await cacheGet<Show[]>(cacheKey.allShows(mbid));
   if (cached) return cached;
 
   const setlists = await client.fetchAllSetlists(mbid, { maxShows: 3000 });
   const shows = setlists.map(toShow);
-  await cacheSet(`v2:history:${mbid}`, shows, HISTORY_TTL_S);
-  await cacheSet(`v2:recent:${mbid}`, shows.slice(0, 100), RECENT_TTL_S);
+  await cacheSet(cacheKey.allShows(mbid), shows, HISTORY_TTL_S);
+  await cacheSet(cacheKey.recentShows(mbid), shows.slice(0, 100), RECENT_TTL_S);
   return shows;
 }
 
 export async function getSetlistById(setlistId: string): Promise<Show | null> {
-  const cached = await cacheGet<Show | null>(`v2:show:${setlistId}`);
+  const cached = await cacheGet<Show | null>(cacheKey.show(setlistId));
   if (cached !== undefined) return cached;
   const setlist = await client.getSetlist(setlistId);
   const show = setlist ? toShow(setlist) : null;
-  await cacheSet(`v2:show:${setlistId}`, show, SHOW_TTL_S);
+  await cacheSet(cacheKey.show(setlistId), show, SHOW_TTL_S);
   return show;
 }
 
@@ -242,9 +241,8 @@ export async function matchTracks(
   artistName: string,
   songs: MatchableSong[]
 ): Promise<Map<string, MatchedTrack | null>> {
-  // "track2": entries carry album names since the canonical-display change
   const keyFor = (song: MatchableSong) =>
-    `v2:track2:${(song.coverArtist ?? artistName).toLowerCase()}::${song.key}`;
+    cacheKey.track((song.coverArtist ?? artistName).toLowerCase(), song.key);
 
   const cached = await cacheGetMany<CachedMatch>(songs.map(keyFor));
 

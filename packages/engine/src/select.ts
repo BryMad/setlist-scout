@@ -1,4 +1,4 @@
-import { songKey, type Show } from "./normalize.ts";
+import { isUntaggedShow, songKey, type Show } from "./normalize.ts";
 
 /**
  * Selectors: given quality-filtered shows, pick the subset a prediction is based on.
@@ -10,6 +10,7 @@ export type StrategyKind =
   | "latest-tour"
   | "last-n-shows"
   | "named-tour"
+  | "untagged-shows"
   | "single-show";
 
 export interface Selection {
@@ -56,6 +57,13 @@ export function selectNamedTour(shows: Show[], tourName: string): Selection | nu
   const matched = sortByDateDesc(shows).filter((show) => show.tourName === tourName);
   if (matched.length === 0) return null;
   return { strategy: "named-tour", tourName, shows: matched };
+}
+
+/** Every show with no tour attribution — the "No tour info" bucket. */
+export function selectUntaggedShows(shows: Show[]): Selection | null {
+  const matched = sortByDateDesc(shows).filter(isUntaggedShow);
+  if (matched.length === 0) return null;
+  return { strategy: "untagged-shows", tourName: null, shows: matched };
 }
 
 export function selectShow(shows: Show[], id: string): Selection | null {
