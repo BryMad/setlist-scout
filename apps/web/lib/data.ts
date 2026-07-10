@@ -43,12 +43,23 @@ export interface ArtistSuggestion {
   mbid: string | null;
 }
 
-const normName = (value: string) =>
-  value
+/**
+ * Sources disagree on punctuation — Spotify "Old 97's" vs setlist.fm
+ * "Old 97’s" (U+2019), "Panic! at the Disco", "&" vs "and" — so strip it all
+ * rather than chase variants. "&"/"+" become "and" first: the incarnation
+ * separator check below needs them to survive as a word.
+ */
+const normName = (value: string) => {
+  const stripped = value
     .toLowerCase()
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
+    .replace(/[&+]/g, " and ")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
     .trim();
+  // all-punctuation names ("!!!") strip to nothing — keep them verbatim
+  return stripped || value.toLowerCase().trim();
+};
 
 /**
  * Spotify drives the suggestion list — its partial-query ranking is what made
@@ -99,8 +110,9 @@ export interface ArtistIncarnation {
 const isTribute = (disambiguation: string | null | undefined) =>
   /tribute|cover band/i.test(disambiguation ?? "");
 
-/** "neil young & crazy horse" is an incarnation of "neil young"; "pearl jam uk" is not. */
-const INCARNATION_SEPARATOR = /^\s*(?:&|and|\+|with|y|feat\.?|featuring)\s+/i;
+/** "neil young and crazy horse" is an incarnation of "neil young"; "pearl jam uk"
+ *  is not. Runs on normName output, where "&"/"+" have already become "and". */
+const INCARNATION_SEPARATOR = /^\s*(?:and|with|y|feat|featuring)\s+/i;
 
 /**
  * Name → setlist.fm identity, at selection time. Spotify groups an artist's
@@ -113,8 +125,9 @@ const INCARNATION_SEPARATOR = /^\s*(?:&|and|\+|with|y|feat\.?|featuring)\s+/i;
 export async function resolveArtistIncarnations(
   name: string
 ): Promise<ArtistIncarnation[]> {
-  // "2": pruning logic changed with the same-name-duplicate handling
-  const cacheKey = `v2:incarnations2:${normName(name)}`;
+  // "3": apostrophe normalization fix — prior version cached empty results
+  // for curly-apostrophe artists (Old 97's, Guns N' Roses, ...)
+  const cacheKey = `v2:incarnations3:${normName(name)}`;
   const cached = await cacheGet<ArtistIncarnation[]>(cacheKey);
   if (cached) return cached;
 
