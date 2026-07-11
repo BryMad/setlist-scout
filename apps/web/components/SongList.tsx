@@ -47,16 +47,20 @@ export default function SongList({ songs, matches, showLikelihood = true }: Song
           return (
             <li
               key={song.key}
-              className="group cascade-in row-lit grid grid-cols-[1.75rem_4rem_1fr_auto] items-center gap-3 rounded-r-lg px-2 py-2"
+              className="group cascade-in row-lit grid grid-cols-[4rem_minmax(0,1fr)_auto] items-center gap-2.5 rounded-r-lg px-1.5 py-2 sm:grid-cols-[1.75rem_4rem_minmax(0,1fr)_auto] sm:gap-3 sm:px-2"
               style={{ animationDelay: `${delay}ms` }}
             >
-              <span className="text-right font-mono text-sm text-zinc-600">
+              <span className="hidden text-right font-mono text-sm text-zinc-600 sm:block">
                 {index + 1}
               </span>
 
               {/* Spotify content zone: canonical track presentation — artwork
                   unaltered, then track / artist / album stacked, platform
-                  sans-serif (mirrors v1's Track component per the guidelines). */}
+                  sans-serif (mirrors v1's Track component per the guidelines).
+                  Mobile drops the index column + tightens gutters so the
+                  metadata column clears the guideline minimums (track 23ch /
+                  artist 18ch / album 25ch); truncation past that is allowed,
+                  full text stays reachable via title attr + the Spotify link. */}
               {match?.albumArt ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -67,33 +71,42 @@ export default function SongList({ songs, matches, showLikelihood = true }: Song
               ) : (
                 <div className="h-16 w-16 rounded bg-zinc-900" />
               )}
-              <div className="min-w-0">
-                <div className="flex items-baseline gap-2">
-                  {match?.url ? (
-                    <a
-                      href={match.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="truncate text-sm font-bold hover:underline"
-                    >
-                      {match.name}
-                    </a>
-                  ) : (
-                    <span className="truncate text-sm font-bold">{song.name}</span>
-                  )}
-                  {song.isCover && (
-                    <span className="shrink-0 rounded bg-zinc-800 px-1.5 py-0.5 text-xs text-zinc-400">
-                      {song.coverArtist} cover
-                    </span>
-                  )}
-                </div>
+              <div className="min-w-0 self-center">
+                {match?.url ? (
+                  <a
+                    href={match.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    title={match.name}
+                    className="block truncate text-sm font-bold hover:underline"
+                  >
+                    {match.name}
+                  </a>
+                ) : (
+                  <span className="block truncate text-sm font-bold" title={song.name}>
+                    {song.name}
+                  </span>
+                )}
                 {match && (
                   <>
-                    <p className="truncate text-sm text-zinc-400">{match.artist}</p>
+                    <p className="truncate text-sm text-zinc-400" title={match.artist}>
+                      {match.artist}
+                    </p>
                     {match.album && (
-                      <p className="truncate text-xs text-zinc-500">{match.album}</p>
+                      <p className="truncate text-xs text-zinc-500" title={match.album}>
+                        {match.album}
+                      </p>
                     )}
                   </>
+                )}
+                {/* cover tag lives OUTSIDE the Spotify metadata stack — their
+                    lines stay exactly as provided (lab winner: brand-tinted tag) */}
+                {song.isCover && (
+                  <p className="mt-1">
+                    <span className="rounded border border-indigo-500/40 bg-indigo-500/10 px-1.5 py-0.5 text-[11px] font-medium text-indigo-300">
+                      {song.coverArtist ? `COVER · ${song.coverArtist}` : "COVER"}
+                    </span>
+                  </p>
                 )}
               </div>
               <div className="flex flex-col items-end gap-1">

@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 
 /**
- * Header login state (v1 parity): "Log in with Spotify" when signed out,
- * a connected marker + log out when signed in. Status comes from /api/me
- * because the session cookie is HttpOnly.
+ * Spotify login state (v1 parity). Status comes from /api/me because the
+ * session cookie is HttpOnly.
+ *
+ * Two shapes: "bar" (desktop header — green pill / small text button) and
+ * "menu" (mobile dropdown — uniform full-width rows like any other menu item).
  */
-export default function AuthControls() {
+export default function AuthControls({ variant = "bar" }: { variant?: "bar" | "menu" }) {
   const [status, setStatus] = useState<"unknown" | "out" | "in">("unknown");
 
   useEffect(() => {
@@ -27,28 +29,46 @@ export default function AuthControls() {
 
   if (status === "unknown") return null;
 
-  if (status === "out") {
-    return (
+  const login = () => {
+    const back = encodeURIComponent(
+      window.location.pathname + window.location.search
+    );
+    window.location.href = `/auth/login?return=${back}`;
+  };
+
+  const logout = async () => {
+    await fetch("/auth/logout", { method: "POST" }).catch(() => {});
+    setStatus("out");
+  };
+
+  if (variant === "menu") {
+    return status === "out" ? (
       <button
-        onClick={() => {
-          const back = encodeURIComponent(
-            window.location.pathname + window.location.search
-          );
-          window.location.href = `/auth/login?return=${back}`;
-        }}
-        className="shrink-0 rounded-full bg-[#1DB954] px-3.5 py-1.5 text-xs font-semibold text-white hover:brightness-110"
+        onClick={login}
+        className="block w-full px-4 py-2.5 text-left text-sm font-medium text-[#1DB954] transition hover:bg-zinc-800"
       >
         Log in
+      </button>
+    ) : (
+      <button
+        onClick={logout}
+        className="block w-full px-4 py-2.5 text-left text-sm text-zinc-300 transition hover:bg-zinc-800"
+      >
+        Log out
       </button>
     );
   }
 
-  return (
+  return status === "out" ? (
     <button
-      onClick={async () => {
-        await fetch("/auth/logout", { method: "POST" }).catch(() => {});
-        setStatus("out");
-      }}
+      onClick={login}
+      className="shrink-0 rounded-full bg-[#1DB954] px-3.5 py-1.5 text-xs font-semibold text-white hover:brightness-110"
+    >
+      Log in
+    </button>
+  ) : (
+    <button
+      onClick={logout}
       className="shrink-0 text-xs text-zinc-400 transition hover:text-zinc-100"
     >
       Log out
