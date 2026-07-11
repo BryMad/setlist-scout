@@ -1,10 +1,12 @@
 import Link from "next/link";
+import ConfidenceChip from "@/components/ConfidenceChip";
 import SavePlaylist from "@/components/SavePlaylist";
 import SectionNav from "@/components/SectionNav";
 import { ShowPicker } from "@/components/ShowCards";
 import SongList from "@/components/SongList";
-import { CONFIDENCE_STYLE } from "@/components/confidence";
+import TourStats from "@/components/TourStats";
 import { getAllShows, matchTracks, runPrediction } from "@/lib/data";
+import { buildTourStats } from "@/lib/tour-stats";
 import { NO_TOUR_LABEL, NO_TOUR_SLUG } from "@/lib/relive";
 import { isUntaggedShow, type PredictMode, type Show } from "@setlistscout/engine";
 import type { MatchedTrack } from "@setlistscout/clients";
@@ -150,24 +152,16 @@ async function PlayedView({
           : "songs a night on this tour — below is everything they pulled out, ranked by how often it came up."}
       </p>
 
-      <section className="cascade-in mt-4 rounded-xl border border-zinc-800 bg-zinc-900/60 p-5 [animation-delay:240ms]">
-        <div className="flex flex-wrap items-center gap-3">
-          <span
-            className={`rounded-md border px-2.5 py-0.5 font-mono text-xs font-medium uppercase tracking-wide ${CONFIDENCE_STYLE[prediction.confidence]}`}
-          >
-            {prediction.confidence} confidence
-          </span>
-          <span className="font-mono text-xs text-zinc-500">
-            {prediction.showsAnalyzed} shows · {prediction.dateRange.from} →{" "}
-            {prediction.dateRange.to}
-          </span>
-        </div>
-        <ul className="mt-3 space-y-1.5 text-sm leading-relaxed text-zinc-300">
-          {prediction.explanation.map((line) => (
-            <li key={line}>{line}</li>
-          ))}
-        </ul>
-        <div className="mt-4 border-t border-zinc-800 pt-4">
+      {/* relative: the tour-stats HUD anchors to this panel, full width */}
+      <section className="cascade-in relative mt-4 rounded-xl border border-zinc-800 bg-zinc-900/60 p-5 [animation-delay:240ms]">
+        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-4">
+          <div className="flex min-w-0 flex-1 flex-col items-start gap-2.5">
+            <ConfidenceChip
+              confidence={prediction.confidence}
+              lines={prediction.explanation}
+            />
+            <TourStats stats={buildTourStats(prediction, matches)} />
+          </div>
           <SavePlaylist
             playlistName={
               isNoTour

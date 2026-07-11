@@ -23,9 +23,10 @@
 export const cacheKey = {
   /* raw layers — normalized external data, processing-agnostic */
   suggest: (normQuery: string) => `v2:suggest:${normQuery}`,
-  recentShows: (mbid: string) => `v2:recent:${mbid}`,
-  allShows: (mbid: string) => `v2:history:${mbid}`,
-  show: (setlistId: string) => `v2:show:${setlistId}`,
+  // 2: ShowSong grew isEncore (opener/encore stats) — stored shape changed
+  recentShows: (mbid: string) => `v2:recent2:${mbid}`,
+  allShows: (mbid: string) => `v2:history2:${mbid}`,
+  show: (setlistId: string) => `v2:show2:${setlistId}`,
 
   /* derived layers — versioned; bump when the producing pipeline changes */
   // 3: punctuation-stripping normName (2 cached empty results for "Old 97's")

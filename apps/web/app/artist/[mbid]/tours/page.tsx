@@ -39,8 +39,12 @@ export default async function ToursPage({ params, searchParams }: PageProps) {
       <SectionNav mbid={mbid} name={name} active="relive" />
 
       <p className="cascade-in mt-6 text-sm text-zinc-500 [animation-delay:120ms]">
-        {tours.length} tours across {lightShows.length} recorded shows. Pick a tour
-        to see what got played — or search across every night they&apos;ve logged.
+        {/* explicit {" "} — Turbopack's JSX transform drops the space
+            between an expression and trailing text that meets a newline */}
+        {tours.length} tour{tours.length === 1 ? "" : "s"} across{" "}
+        {lightShows.length}{" "}
+        recorded shows. Pick a tour to see what got played — or search across
+        every night they&apos;ve logged.
       </p>
 
       <TourBrowser

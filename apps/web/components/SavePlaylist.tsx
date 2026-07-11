@@ -100,9 +100,17 @@ export default function SavePlaylist({ playlistName, description, uris }: SavePl
         disabled={state === "saving" || uris.length === 0}
         className="rounded-full bg-[#1DB954] px-5 py-2 text-sm font-semibold text-white hover:brightness-110 disabled:opacity-50"
       >
-        {state === "saving"
-          ? "Saving…"
-          : `Save ${uris.length} songs as Spotify playlist`}
+        {state === "saving" ? (
+          "Saving…"
+        ) : (
+          <>
+            {/* phone width: drop the count so the button fits beside the chips */}
+            <span className="sm:hidden">Save as Spotify playlist</span>
+            <span className="hidden sm:inline">
+              Save {uris.length} songs as Spotify playlist
+            </span>
+          </>
+        )}
       </button>
       {state === "error" && (
         <span className="text-sm text-rose-400">Something went wrong — try again.</span>

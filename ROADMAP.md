@@ -133,7 +133,15 @@ P3 = discovery aids (sort lineup by likelihood confidence, popularity).
 
 ---
 
-## 0.5. QUEUED — Predict-page stats HUD
+## 0.5. IN FLIGHT — Predict-page stats HUD
+
+**First slice shipped 2026-07-11:** the confidence panel got reined in —
+methodology blurb behind a "? How we got this" disclosure (toggletip, not a
+hover tooltip: NN/g), and a "See tour stats" popover HUD (lib/tour-stats.ts +
+components/TourStats.tsx) with date range, stat tiles (shows / ~songs a night /
+distinct songs), and a plays-weighted album-share meter list from the existing
+Spotify matches. Wired on predict + tour pages. The encore/opener tiles and
+deeper viz below remain.
 
 A compact data widget on the Predict view — glanceable by default, clickable
 to go deeper. Aesthetic reference: the lab's "Telemetry" skin, translated

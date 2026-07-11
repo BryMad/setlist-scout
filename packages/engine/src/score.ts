@@ -33,6 +33,12 @@ export interface ScoredSong {
   likelihood: number;
   /** Distinct tour buckets the song appeared in within this selection. */
   tourSpread: number;
+  /** Shows in this selection that this song OPENED (first performed song). */
+  openerCount: number;
+  /** Shows in this selection where this song appeared in an encore. */
+  encoreCount: number;
+  /** Shows in this selection that this song CLOSED (last performed song). */
+  closerCount: number;
   isCover: boolean;
   coverArtist: string | null;
 }
@@ -40,6 +46,9 @@ export interface ScoredSong {
 interface SongStats {
   weight: number;
   showsPlayed: number;
+  openerCount: number;
+  encoreCount: number;
+  closerCount: number;
   nameCounts: Map<string, number>;
   coverArtistCounts: Map<string, number>;
   tours: Set<string>;
@@ -78,6 +87,10 @@ export function scoreSongs(shows: Show[], options: ScoreOptions = {}): ScoredSon
     const weight = weightOf(show);
     totalWeight += weight;
     const seenThisShow = new Set<string>();
+    const seenEncoreThisShow = new Set<string>();
+    const performed = show.songs.filter((song) => !song.isTape);
+    const openerKey = performed[0] ? songKey(performed[0].name) : null;
+    const closerKey = performed.at(-1) ? songKey(performed.at(-1)!.name) : null;
 
     for (const song of show.songs) {
       if (song.isTape) continue;
@@ -89,6 +102,9 @@ export function scoreSongs(shows: Show[], options: ScoreOptions = {}): ScoredSon
         entry = {
           weight: 0,
           showsPlayed: 0,
+          openerCount: 0,
+          encoreCount: 0,
+          closerCount: 0,
           nameCounts: new Map(),
           coverArtistCounts: new Map(),
           tours: new Set(),
@@ -109,6 +125,12 @@ export function scoreSongs(shows: Show[], options: ScoreOptions = {}): ScoredSon
         entry.weight += weight;
         entry.showsPlayed += 1;
         entry.tours.add(show.tourName ?? "(untoured)");
+        if (key === openerKey) entry.openerCount += 1;
+        if (key === closerKey) entry.closerCount += 1;
+      }
+      if (song.isEncore && !seenEncoreThisShow.has(key)) {
+        seenEncoreThisShow.add(key);
+        entry.encoreCount += 1;
       }
     }
   }
@@ -120,6 +142,9 @@ export function scoreSongs(shows: Show[], options: ScoreOptions = {}): ScoredSon
       name: mostCommon(entry.nameCounts) ?? key,
       showsPlayed: entry.showsPlayed,
       totalShows: shows.length,
+      openerCount: entry.openerCount,
+      encoreCount: entry.encoreCount,
+      closerCount: entry.closerCount,
       likelihood: totalWeight === 0 ? 0 : entry.weight / totalWeight,
       tourSpread: entry.tours.size,
       isCover: coverArtist !== null,

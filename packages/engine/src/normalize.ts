@@ -5,6 +5,8 @@ export interface ShowSong {
   name: string;
   /** Walk-on/interlude music from tape — not actually performed, excluded from counts. */
   isTape: boolean;
+  /** Played in an encore set (setlist.fm sets.set[].encore). */
+  isEncore: boolean;
   isCover: boolean;
   coverArtist: string | null;
 }
@@ -51,6 +53,7 @@ export function toShow(setlist: Setlist): Show {
       .map((song) => ({
         name: song.name,
         isTape: song.tape ?? false,
+        isEncore: set.encore != null,
         isCover: song.cover != null,
         coverArtist: song.cover?.name ?? null,
       }))
