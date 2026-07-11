@@ -46,7 +46,7 @@ export default function ConfidenceChip({
         ref={triggerRef}
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className={`flex items-center gap-1.5 rounded-md border px-2.5 py-0.5 font-mono text-xs font-medium uppercase tracking-wide transition hover:brightness-125 ${CONFIDENCE_STYLE[confidence]}`}
+        className={`flex items-center gap-1.5 whitespace-nowrap rounded-md border px-2.5 py-0.5 font-mono text-xs font-medium uppercase tracking-wide transition hover:brightness-125 ${CONFIDENCE_STYLE[confidence]}`}
       >
         {confidence} confidence
         <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full border border-current text-[9px] font-semibold">

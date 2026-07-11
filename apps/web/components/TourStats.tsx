@@ -48,7 +48,7 @@ export default function TourStats({ stats }: { stats: TourStatsData }) {
         ref={triggerRef}
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className={`flex items-center gap-1.5 rounded-md border px-2.5 py-0.5 font-mono text-xs font-medium uppercase tracking-wide transition ${
+        className={`flex items-center gap-1.5 whitespace-nowrap rounded-md border px-2.5 py-0.5 font-mono text-xs font-medium uppercase tracking-wide transition ${
           open
             ? "border-zinc-400 bg-zinc-400/15 text-zinc-100"
             : "border-zinc-600 bg-zinc-500/10 text-zinc-300 hover:border-zinc-400 hover:text-zinc-100"

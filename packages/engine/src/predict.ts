@@ -173,7 +173,11 @@ function buildExplanation(
   for (const signal of signals) {
     switch (signal.kind) {
       case "healthy-latest-tour":
-        break; // the base line already says it
+        lines.push(
+          `Their current tour has a healthy sample on its own (${signal.showCount} shows with setlists), ` +
+            `so we analyzed exactly this tour — no older material mixed in.`
+        );
+        break;
       case "thin-latest-tour":
         lines.push(
           `The latest tour ("${signal.tourName}") only has ${signal.showCount} usable shows, ` +
@@ -208,6 +212,13 @@ function buildExplanation(
         );
         break;
     }
+  }
+
+  if (selection.strategy !== "single-show") {
+    lines.push(
+      `A song's likelihood is the share of these ${count} shows it appeared in; ` +
+        `the opener, encore, and album stats come from the same window.`
+    );
   }
 
   if (selection.strategy !== "single-show" && excludedCount > 0) {

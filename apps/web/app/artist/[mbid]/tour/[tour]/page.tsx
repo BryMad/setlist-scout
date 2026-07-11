@@ -154,8 +154,9 @@ async function PlayedView({
 
       {/* relative: the tour-stats HUD anchors to this panel, full width */}
       <section className="cascade-in relative mt-4 rounded-xl border border-zinc-800 bg-zinc-900/60 p-5 [animation-delay:240ms]">
-        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-4">
-          <div className="flex min-w-0 flex-1 flex-col items-start gap-2.5">
+        {/* mobile: everything stacks centered; sm+: chips left, save right */}
+        <div className="flex flex-col items-center gap-4 sm:flex-row sm:flex-wrap sm:justify-between sm:gap-x-6">
+          <div className="flex flex-col items-center gap-2.5 sm:min-w-0 sm:flex-1 sm:items-start">
             <ConfidenceChip
               confidence={prediction.confidence}
               lines={prediction.explanation}
