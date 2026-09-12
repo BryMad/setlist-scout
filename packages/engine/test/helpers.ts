@@ -43,6 +43,7 @@ export function makeShow(
   const songList = names.map((name) => ({
     name,
     isTape: false,
+    isEncore: false,
     isCover: false,
     coverArtist: null,
   }));

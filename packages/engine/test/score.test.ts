@@ -46,6 +46,7 @@ describe("scoreSongs (synthetic)", () => {
     withTape.songs.push({
       name: "Walk-on Music",
       isTape: true,
+      isEncore: false,
       isCover: false,
       coverArtist: null,
     });
@@ -58,6 +59,7 @@ describe("scoreSongs (synthetic)", () => {
     show.songs.push({
       name: "War Pigs",
       isTape: false,
+      isEncore: false,
       isCover: true,
       coverArtist: "Black Sabbath",
     });

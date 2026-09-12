@@ -7,6 +7,7 @@ import {
   selectNamedTour,
   selectShow,
   peakShowShare,
+  coverageShare,
 } from "../src/select.ts";
 import { assessQuality } from "../src/quality.ts";
 import { loadShows, makeShow } from "./helpers.ts";
@@ -99,9 +100,34 @@ describe("peakShowShare", () => {
   it("ignores tape entries", () => {
     const shows = [makeShow(["Real A"]), makeShow(["Real B"])];
     for (const show of shows) {
-      show.songs.push({ name: "Intro Tape", isTape: true, isCover: false, coverArtist: null });
+      show.songs.push({ name: "Intro Tape", isTape: true, isEncore: false, isCover: false, coverArtist: null });
     }
     expect(peakShowShare(shows)).toBe(0.5);
+  });
+});
+
+describe("coverageShare", () => {
+  it("is ~1 for a fixed setlist and low for full rotation", () => {
+    const stable = [
+      makeShow(["A", "B", "C"]),
+      makeShow(["A", "B", "C"]),
+    ];
+    expect(coverageShare(stable)).toBe(1);
+
+    const rotating = [makeShow(["A", "B"]), makeShow(["C", "D"]), makeShow(["E", "F"])];
+    expect(coverageShare(rotating)).toBeCloseTo(1 / 3);
+    expect(coverageShare([])).toBe(0);
+  });
+
+  it("sees through the anchor-song band that peakShowShare misreads", () => {
+    // one hit played every night, everything else rotates completely
+    const anchor = [
+      makeShow(["The Hit", "A", "B"]),
+      makeShow(["The Hit", "C", "D"]),
+      makeShow(["The Hit", "E", "F"]),
+    ];
+    expect(peakShowShare(anchor)).toBe(1); // looks perfectly stable
+    expect(coverageShare(anchor)).toBeCloseTo((1 + 1 / 3 + 1 / 3) / 3); // it isn't
   });
 });
 
@@ -131,7 +157,7 @@ describe("selectAuto route-picker", () => {
       tourName: "Sphere Las Vegas 2026",
       widenedTo: 60,
     });
-    expect((rotation as { peakShowShare: number }).peakShowShare).toBeLessThan(0.2);
+    expect((rotation as { coverage: number }).coverage).toBeLessThan(0.2);
   });
 
   it("Metallica: no-repeat-weekend format still reads as stable, no widening", () => {

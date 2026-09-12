@@ -15,6 +15,7 @@ function makeShow(songCount: number, overrides: Partial<Show> = {}): Show {
     songs: Array.from({ length: songCount }, (_, i) => ({
       name: `Song ${i}`,
       isTape: false,
+      isEncore: false,
       isCover: false,
       coverArtist: null,
     })),

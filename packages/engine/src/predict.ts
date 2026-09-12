@@ -190,13 +190,13 @@ function buildExplanation(
         );
         break;
       case "high-rotation": {
-        const peak = Math.round(signal.peakShowShare * 100);
+        const pct = Math.round(signal.coverage * 100);
         lines.push(
           signal.widenedTo === null
-            ? `Setlists on "${signal.tourName}" rotate heavily from night to night ` +
-                `(no song appeared in more than ${peak}% of shows) — individual song odds run low for this artist.`
-            : `Setlists on "${signal.tourName}" rotate heavily from night to night ` +
-                `(no song appeared in more than ${peak}% of shows), so we analyzed the last ${signal.widenedTo} shows for a broader picture.`
+            ? `Setlists on "${signal.tourName}" rotate heavily from night to night — even a ` +
+                `best-guess setlist would only cover about ${pct}% of a typical show, so individual song odds run low for this artist.`
+            : `Setlists on "${signal.tourName}" rotate heavily from night to night — even a ` +
+                `best-guess setlist would only cover about ${pct}% of a typical show — so we analyzed the last ${signal.widenedTo} shows for a broader picture.`
         );
         break;
       }

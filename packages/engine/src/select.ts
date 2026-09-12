@@ -1,4 +1,5 @@
 import { isUntaggedShow, songKey, type Show } from "./normalize.ts";
+import { median } from "./quality.ts";
 
 /**
  * Selectors: given quality-filtered shows, pick the subset a prediction is based on.
@@ -96,6 +97,40 @@ export function peakShowShare(shows: Show[]): number {
   return max / shows.length;
 }
 
+/**
+ * Predictable-coverage score: build the best possible guess-setlist (the
+ * top-L songs by show-share, L = median performed songs per night) and
+ * measure how much of a typical show it actually covers, 0..1.
+ *
+ * Unlike peakShowShare this sees the WHOLE distribution: an anchor-song band
+ * that always plays the hit but rotates everything else scores low, and
+ * Metallica's no-repeat-weekend format lands mid (0.61 on the M72 fixture)
+ * instead of a misleading 0.94. Stable-setlist fixtures sit at 0.95+;
+ * Phish's Sphere run measures 0.11.
+ */
+export function coverageShare(shows: Show[]): number {
+  if (shows.length === 0) return 0;
+  const counts = new Map<string, number>();
+  for (const show of shows) {
+    const seenThisShow = new Set<string>();
+    for (const song of show.songs) {
+      if (song.isTape) continue;
+      const key = songKey(song.name);
+      if (key.length === 0 || seenThisShow.has(key)) continue;
+      seenThisShow.add(key);
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+  }
+  const setLength = Math.round(median(shows.map((show) => show.songCount)));
+  if (setLength === 0) return 0;
+  const topShares = [...counts.values()]
+    .map((count) => count / shows.length)
+    .sort((a, b) => b - a)
+    .slice(0, setLength);
+  // fewer distinct songs than slots = the missing slots are unpredictable (0)
+  return topShares.reduce((sum, share) => sum + share, 0) / setLength;
+}
+
 // --- auto route-picker ---------------------------------------------------
 
 export type Confidence = "high" | "medium" | "low";
@@ -114,7 +149,8 @@ export type AutoSignal =
   | {
       kind: "high-rotation";
       tourName: string;
-      peakShowShare: number;
+      /** coverageShare of the tour: predictable fraction of a typical night. */
+      coverage: number;
       widenedTo: number | null;
     };
 
@@ -136,10 +172,11 @@ export interface AutoOptions {
   /** Newest show older than this drops confidence to low. */
   dormantAfterDays?: number;
   /**
-   * A tour whose most reliable song still plays in fewer than this share of
-   * shows is a rotation artist; widen the window instead of trusting the tour.
+   * A tour where a best-guess setlist covers less than this fraction of a
+   * typical night is a rotation artist; widen the window instead of
+   * trusting the tour alone.
    */
-  rotationPeakShare?: number;
+  rotationCoverage?: number;
 }
 
 export const AUTO_DEFAULTS = {
@@ -147,7 +184,7 @@ export const AUTO_DEFAULTS = {
   widenTo: 60,
   staleAfterDays: 540, // ~18 months
   dormantAfterDays: 1095, // ~3 years
-  rotationPeakShare: 0.5,
+  rotationCoverage: 0.5,
 };
 
 const CONFIDENCE_RANK: Record<Confidence, number> = { high: 2, medium: 1, low: 0 };
@@ -166,8 +203,8 @@ export function selectAuto(shows: Show[], options: AutoOptions): AutoDecision | 
   let selection: Selection;
 
   if (latestTour && latestTour.shows.length >= opts.minTourSample) {
-    const peak = peakShowShare(latestTour.shows);
-    if (peak < opts.rotationPeakShare) {
+    const coverage = coverageShare(latestTour.shows);
+    if (coverage < opts.rotationCoverage) {
       // Rotation artist: the tour is healthy but per-song certainty is low.
       // Widen for more signal — unless the widened window wouldn't reach
       // beyond this tour anyway (a long tour IS the whole recent history).
@@ -179,7 +216,7 @@ export function selectAuto(shows: Show[], options: AutoOptions): AutoDecision | 
       signals.push({
         kind: "high-rotation",
         tourName: latestTour.tourName!,
-        peakShowShare: peak,
+        coverage,
         widenedTo: addsOtherShows ? selection.shows.length : null,
       });
       cap("medium");
