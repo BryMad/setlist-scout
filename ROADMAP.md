@@ -5,6 +5,74 @@ the point is that each idea is written down with enough context to pick it up la
 
 ---
 
+## 0.0 IN FLIGHT — Auto route-picker misses recent untagged touring
+
+**Engine fix built 2026-09-11 (uncommitted):** `selectRecentRun` in
+`packages/engine/src/select.ts`, wired into `selectAuto`; signals renamed
+(`healthy-recent-run` / `thin-recent-run`, `high-rotation` now carries
+`tourName: string | null`); new `recent-run` strategy + explanation copy.
+Cola live: recent-run, 12 shows, HIGH (was last-42-shows back to 2022).
+Fixture decisions for Oasis/Metallica/U2/Phish/Talking Heads unchanged.
+Remaining: eyeball the new explanation copy on the real predict page.
+
+**The Cola bug.** `selectAuto`'s only concept of "the artist's current era"
+is a setlist.fm tour *name* tag. Tour tagging is crowdsourced and spotty —
+Cola has 12 real, tightly-clustered shows from the last six weeks with no
+tour name, so the picker skips straight past them to a stale, thin,
+year-old named tour, decides that's "too thin," and falls back to "last 60
+kept shows" — which for a sparse artist page means "the entire fetched
+history back to 2022." Full trace: `docs/predict-auto-flow.md`.
+
+Fix direction (decided 2026-09-11): recency wins outright. `selectRecentRun`
+replaces `selectLatestTour` as auto's primary selector — walk newest→oldest,
+a show joins the cluster if it's within 60 days of the previous one (tag
+irrelevant) OR a longer gap is bridged by a matching tour name on both sides
+(keeps multi-leg arena tours like M72 whole). Tour name becomes a label
+attached when available, not the thing that decides what to analyze.
+
+**Follow-up (parked):** when the recent run is thin and auto widens to
+last-N, it's a blunt blend — no comparison between the new leg and the older
+material it's pulling in. The only softener is the scorer's 180-day recency
+half-life. Smarter: measure setlist overlap between the thin recent cluster
+and the older shows; if overlap is high, blend freely; if low (they changed
+the set after the break), lean on the new leg even though it's small. Also
+still unbounded by date — a sparse artist's "last 60" can reach back years.
+
+## 0.0b QUEUED — User-selectable prediction window
+
+The artist page's mode tabs are Auto / Latest tour / Last 60 shows
+(`apps/web/app/artist/[mbid]/page.tsx`, `?mode=`) — and "60" is baked in.
+Users who can see what auto decided should be able to override it with
+real granularity. Decided 2026-09-11: keep Auto as the default, and turn
+"Last 60 shows" into a "Last N shows" dropdown (5 / 10 / 25 / 60 / 100).
+Not a full strategy picker for now. Note the manual "Latest tour" tab still
+means the latest *named* tour (`selectLatestTour`) — auto now uses the
+recent-run selector from §0.0 — which is exactly the distinction §0.0d's
+copy needs to explain.
+
+## 0.0c QUEUED — Unify the HUD/confidence disclosure affordance
+
+The confidence panel's "? How we got this" and the predict page's "See
+tour stats" currently use different affordances for the same job (one
+looks like an inline expand with a chevron, the other opens a popover) —
+reads as inconsistent. Decided: drop the chevron on both, use a plain "?"
+that reveals a tooltip on hover (tap on touch, since mobile has no
+hover — `[[design-taste]]` rest-state rule applies here too).
+
+## 0.0d QUEUED — Clarify "Latest tour" copy
+
+"Latest tour" is misleading as currently worded: it's the latest tour
+*someone tagged on setlist.fm*, not necessarily the artist's actual most
+recent touring (see §0.0 — Cola is clearly touring right now with zero
+tour tag). Keep "Latest tour" as the strategy's name, but add a short
+clarifying line wherever it's explained. Draft candidates:
+- "The newest tour with a name on setlist.fm — not every tour gets one, so
+  there may be more recent touring this doesn't capture."
+- "Newest *named* tour on setlist.fm. Untagged recent shows aren't
+  included here."
+
+---
+
 ## 0. DONE 2026-07-10 — Info/About page + login state in the nav ✓
 
 Shipped:
@@ -172,6 +240,11 @@ building the HUD first ships user value while laying §1's foundation.
 Album shares need no engine work (pure aggregation over existing matches).
 
 ---
+
+## 0.5.5 QUEUED — improve HUD
+
+HUD from latest tour needs to have tourname. Last 60 shows should name any tours involved.
+
 
 ## 0.6. QUEUED — Prefer live versions + real live recordings in Relive
 

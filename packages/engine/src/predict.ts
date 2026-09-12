@@ -154,6 +154,12 @@ function buildExplanation(
     case "named-tour":
       lines.push(`Based on ${count} shows from "${selection.tourName}".`);
       break;
+    case "recent-run":
+      lines.push(
+        `Based on ${count} shows from the artist's current run of dates ` +
+          `(${selection.shows[count - 1]!.date} to ${selection.shows[0]!.date}).`
+      );
+      break;
     case "last-n-shows":
       lines.push(`Based on the artist's last ${count} shows.`);
       break;
@@ -172,30 +178,33 @@ function buildExplanation(
 
   for (const signal of signals) {
     switch (signal.kind) {
-      case "healthy-latest-tour":
+      case "healthy-recent-run":
         lines.push(
-          `Their current tour has a healthy sample on its own (${signal.showCount} shows with setlists), ` +
-            `so we analyzed exactly this tour — no older material mixed in.`
+          signal.tourName === null
+            ? `These shows aren't tagged with a tour name on setlist.fm, but they're close together ` +
+                `on the calendar (${signal.showCount} shows with setlists), so we treated them as the current tour — no older material mixed in.`
+            : `Their current tour has a healthy sample on its own (${signal.showCount} shows with setlists), ` +
+                `so we analyzed exactly this tour — no older material mixed in.`
         );
         break;
-      case "thin-latest-tour":
+      case "thin-recent-run":
         lines.push(
-          `The latest tour ("${signal.tourName}") only has ${signal.showCount} usable shows, ` +
-            `so we analyzed the last ${signal.widenedTo} shows instead.`
-        );
-        break;
-      case "no-tour-attribution":
-        lines.push(
-          `Recent shows aren't grouped into a tour, so we analyzed the last ${signal.widenedTo} shows.`
+          signal.tourName === null
+            ? `The artist's most recent run of dates only has ${signal.showCount} usable ` +
+                `show${signal.showCount === 1 ? "" : "s"}, so we analyzed the last ${signal.widenedTo} shows instead.`
+            : `The latest tour ("${signal.tourName}") only has ${signal.showCount} usable ` +
+                `show${signal.showCount === 1 ? "" : "s"}, so we analyzed the last ${signal.widenedTo} shows instead.`
         );
         break;
       case "high-rotation": {
         const pct = Math.round(signal.coverage * 100);
+        const where =
+          signal.tourName === null ? "Setlists on this run" : `Setlists on "${signal.tourName}"`;
         lines.push(
           signal.widenedTo === null
-            ? `Setlists on "${signal.tourName}" rotate heavily from night to night — even a ` +
+            ? `${where} rotate heavily from night to night — even a ` +
                 `best-guess setlist would only cover about ${pct}% of a typical show, so individual song odds run low for this artist.`
-            : `Setlists on "${signal.tourName}" rotate heavily from night to night — even a ` +
+            : `${where} rotate heavily from night to night — even a ` +
                 `best-guess setlist would only cover about ${pct}% of a typical show — so we analyzed the last ${signal.widenedTo} shows for a broader picture.`
         );
         break;

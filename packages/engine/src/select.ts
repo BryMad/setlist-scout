@@ -9,6 +9,7 @@ import { median } from "./quality.ts";
 
 export type StrategyKind =
   | "latest-tour"
+  | "recent-run"
   | "last-n-shows"
   | "named-tour"
   | "untagged-shows"
@@ -32,6 +33,69 @@ export function daysBetween(fromIso: string, toIso: string): number {
     new Date(`${toIso}T00:00:00Z`).getTime() -
     new Date(`${fromIso}T00:00:00Z`).getTime();
   return Math.round(ms / 86_400_000);
+}
+
+export interface RecentRunOptions {
+  /**
+   * Consecutive shows further apart than this start a new run — unless the
+   * same tour name sits on both sides of the gap, which bridges it.
+   */
+  maxGapDays?: number;
+}
+
+export const DEFAULT_RUN_GAP_DAYS = 60;
+
+/**
+ * The artist's current era: the most recent contiguous run of shows by
+ * date, whether or not setlist.fm has a tour name for it. Tour tagging is
+ * crowdsourced and spotty (an active DIY band can have a dozen recent
+ * shows with no tag at all), so the tag is treated as a label, not the
+ * signal. The run's label is its newest tag; a long gap is bridged only
+ * when that label reappears on the far side — arena tours legitimately go
+ * quiet between legs. A short stretch of untagged one-offs inside such a
+ * gap (a festival, a benefit) rides along; a long untagged stretch is its
+ * own era and ends the run.
+ */
+export function selectRecentRun(
+  shows: Show[],
+  options: RecentRunOptions = {}
+): Selection | null {
+  if (shows.length === 0) return null;
+  const maxGapDays = options.maxGapDays ?? DEFAULT_RUN_GAP_DAYS;
+  const sorted = sortByDateDesc(shows);
+
+  const run: Show[] = [sorted[0]!];
+  let i = 1;
+  while (i < sorted.length) {
+    const newer = run[run.length - 1]!;
+    const older = sorted[i]!;
+    if (daysBetween(older.date, newer.date) <= maxGapDays) {
+      run.push(older);
+      i++;
+      continue;
+    }
+
+    const label = run.find((show) => show.tourName !== null)?.tourName ?? null;
+    if (label === null) break;
+    let j = i;
+    while (
+      j < sorted.length &&
+      sorted[j]!.tourName === null &&
+      daysBetween(sorted[j]!.date, older.date) <= maxGapDays
+    ) {
+      j++;
+    }
+    if (j >= sorted.length || sorted[j]!.tourName !== label) break;
+    run.push(...sorted.slice(i, j + 1));
+    i = j + 1;
+  }
+
+  const tourName = run.find((show) => show.tourName !== null)?.tourName ?? null;
+  return {
+    strategy: tourName === null ? "recent-run" : "latest-tour",
+    tourName,
+    shows: run,
+  };
 }
 
 /** All shows from the most recent tour that has any attribution. Null if nothing is toured. */
@@ -140,16 +204,22 @@ export type Confidence = "high" | "medium" | "low";
  * The UI turns these into the "here's how we calculated this" explanation.
  */
 export type AutoSignal =
-  | { kind: "healthy-latest-tour"; tourName: string; showCount: number }
-  | { kind: "thin-latest-tour"; tourName: string; showCount: number; widenedTo: number }
-  | { kind: "no-tour-attribution"; widenedTo: number }
+  /** The current run stands on its own. tourName is null for an untagged run. */
+  | { kind: "healthy-recent-run"; tourName: string | null; showCount: number }
+  /** Too few shows in the current run to trust alone — widened to last-N. */
+  | {
+      kind: "thin-recent-run";
+      tourName: string | null;
+      showCount: number;
+      widenedTo: number;
+    }
   | { kind: "stale-data"; newestShowDate: string; daysSinceLastShow: number }
-  /** Healthy tour, but songs rotate so heavily no per-song prediction holds.
-   *  widenedTo is null when the tour already covers the whole widened window. */
+  /** Healthy run, but songs rotate so heavily no per-song prediction holds.
+   *  widenedTo is null when the run already covers the whole widened window. */
   | {
       kind: "high-rotation";
-      tourName: string;
-      /** coverageShare of the tour: predictable fraction of a typical night. */
+      tourName: string | null;
+      /** coverageShare of the run: predictable fraction of a typical night. */
       coverage: number;
       widenedTo: number | null;
     };
@@ -163,8 +233,10 @@ export interface AutoDecision {
 export interface AutoOptions {
   /** "Today" as an ISO date. Passed in so the engine stays pure/deterministic. */
   asOf: string;
-  /** A latest tour with fewer kept shows than this is too thin to trust alone. */
+  /** A current run with fewer kept shows than this is too thin to trust alone. */
   minTourSample?: number;
+  /** Gap between consecutive shows that ends the current run (see selectRecentRun). */
+  runGapDays?: number;
   /** How many shows to widen to when the latest tour is thin or absent. */
   widenTo?: number;
   /** Newest show older than this caps confidence at medium. */
@@ -181,6 +253,7 @@ export interface AutoOptions {
 
 export const AUTO_DEFAULTS = {
   minTourSample: 8,
+  runGapDays: DEFAULT_RUN_GAP_DAYS,
   widenTo: 60,
   staleAfterDays: 540, // ~18 months
   dormantAfterDays: 1095, // ~3 years
@@ -199,47 +272,43 @@ export function selectAuto(shows: Show[], options: AutoOptions): AutoDecision | 
     if (CONFIDENCE_RANK[max] < CONFIDENCE_RANK[confidence]) confidence = max;
   };
 
-  const latestTour = selectLatestTour(shows);
+  const run = selectRecentRun(shows, { maxGapDays: opts.runGapDays })!;
   let selection: Selection;
 
-  if (latestTour && latestTour.shows.length >= opts.minTourSample) {
-    const coverage = coverageShare(latestTour.shows);
+  if (run.shows.length >= opts.minTourSample) {
+    const coverage = coverageShare(run.shows);
     if (coverage < opts.rotationCoverage) {
-      // Rotation artist: the tour is healthy but per-song certainty is low.
+      // Rotation artist: the run is healthy but per-song certainty is low.
       // Widen for more signal — unless the widened window wouldn't reach
-      // beyond this tour anyway (a long tour IS the whole recent history).
+      // beyond this run anyway (a long run IS the whole recent history).
+      // The run is always a newest-first prefix of the history, so the
+      // widened window adds shows exactly when it's longer than the run.
       const widened = selectLastNShows(shows, opts.widenTo);
-      const addsOtherShows = widened.shows.some(
-        (show) => show.tourName !== latestTour.tourName
-      );
-      selection = addsOtherShows ? widened : latestTour;
+      const addsOtherShows = widened.shows.length > run.shows.length;
+      selection = addsOtherShows ? widened : run;
       signals.push({
         kind: "high-rotation",
-        tourName: latestTour.tourName!,
+        tourName: run.tourName,
         coverage,
         widenedTo: addsOtherShows ? selection.shows.length : null,
       });
       cap("medium");
     } else {
-      selection = latestTour;
+      selection = run;
       signals.push({
-        kind: "healthy-latest-tour",
-        tourName: latestTour.tourName!,
-        showCount: latestTour.shows.length,
+        kind: "healthy-recent-run",
+        tourName: run.tourName,
+        showCount: run.shows.length,
       });
     }
   } else {
     selection = selectLastNShows(shows, opts.widenTo);
-    if (latestTour) {
-      signals.push({
-        kind: "thin-latest-tour",
-        tourName: latestTour.tourName!,
-        showCount: latestTour.shows.length,
-        widenedTo: selection.shows.length,
-      });
-    } else {
-      signals.push({ kind: "no-tour-attribution", widenedTo: selection.shows.length });
-    }
+    signals.push({
+      kind: "thin-recent-run",
+      tourName: run.tourName,
+      showCount: run.shows.length,
+      widenedTo: selection.shows.length,
+    });
     cap("medium");
   }
 
