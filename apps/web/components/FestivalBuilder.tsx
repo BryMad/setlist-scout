@@ -127,7 +127,7 @@ export default function FestivalBuilder({ festival }: { festival: Festival }) {
         <div className="mt-4 border-t border-zinc-800 pt-4">
           <SavePlaylist
             playlistName={`${festival.name} ${festival.year} — Setlist Scout`}
-            description={`Predicted setlists for ${festival.name} ${festival.year} (${festival.location}). Made with SetlistScout.`}
+            description={`The songs the ${festival.name} ${festival.year} lineup is playing on tour, ranked from most likely to least likely. Made with SetlistScout.`}
             uris={uris}
           />
         </div>

@@ -166,13 +166,13 @@ async function PlayedView({
           <SavePlaylist
             playlistName={
               isNoTour
-                ? `${name} — one-off shows setlist`
-                : `${name} — ${tourName} setlist`
+                ? `${name} — Most Played Live, One-Off Shows`
+                : `${name} — Most Played Live on ${tourName}`
             }
             description={
               isNoTour
-                ? `Made with SetlistScout from ${prediction.showsAnalyzed} shows not part of any tour.`
-                : `Made with SetlistScout from ${prediction.showsAnalyzed} shows on ${tourName}.`
+                ? `The songs ${name} is playing at one-off shows, ranked from most likely to least likely. Made with SetlistScout from ${prediction.showsAnalyzed} shows not part of any tour.`
+                : `The songs ${name} is playing on ${tourName}, ranked from most likely to least likely. Made with SetlistScout from ${prediction.showsAnalyzed} shows on ${tourName}.`
             }
             uris={playlistUris}
           />

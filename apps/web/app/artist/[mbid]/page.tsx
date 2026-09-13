@@ -106,8 +106,8 @@ export default async function ArtistPage({ params, searchParams }: PageProps) {
                 <TourStats stats={buildTourStats(prediction, matches)} />
               </div>
               <SavePlaylist
-                playlistName={`${name} — predicted setlist`}
-                description={`Made with SetlistScout from ${prediction.showsAnalyzed} shows (${prediction.dateRange.from} to ${prediction.dateRange.to}).`}
+                playlistName={`${name} — Most Played Live`}
+                description={`The songs ${name} is playing on tour, ranked from most likely to least likely. Made with SetlistScout from ${prediction.showsAnalyzed} shows (${prediction.dateRange.from} to ${prediction.dateRange.to}).`}
                 uris={playlistUris}
               />
             </div>
