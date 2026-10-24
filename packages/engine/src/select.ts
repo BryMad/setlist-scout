@@ -206,6 +206,12 @@ export type Confidence = "high" | "medium" | "low";
 export type AutoSignal =
   /** The current run stands on its own. tourName is null for an untagged run. */
   | { kind: "healthy-recent-run"; tourName: string | null; showCount: number }
+  /**
+   * The current run is thin, but its tour name has never appeared before —
+   * a new tour has just started, and even one night of it says more about
+   * the next show than any amount of older material. Trusted on its own.
+   */
+  | { kind: "new-tour"; tourName: string; showCount: number }
   /** Too few shows in the current run to trust alone — widened to last-N. */
   | {
       kind: "thin-recent-run";
@@ -239,6 +245,8 @@ export interface AutoOptions {
   runGapDays?: number;
   /** How many shows to widen to when the latest tour is thin or absent. */
   widenTo?: number;
+  /** A brand-new tour with fewer shows than this gets low (not medium) confidence. */
+  newTourLowBelow?: number;
   /** Newest show older than this caps confidence at medium. */
   staleAfterDays?: number;
   /** Newest show older than this drops confidence to low. */
@@ -255,12 +263,25 @@ export const AUTO_DEFAULTS = {
   minTourSample: 8,
   runGapDays: DEFAULT_RUN_GAP_DAYS,
   widenTo: 60,
+  newTourLowBelow: 3,
   staleAfterDays: 540, // ~18 months
   dormantAfterDays: 1095, // ~3 years
   rotationCoverage: 0.5,
 };
 
 const CONFIDENCE_RANK: Record<Confidence, number> = { high: 2, medium: 1, low: 0 };
+
+/**
+ * True when the run's tour name appears on no show outside the run — the
+ * tour is new to this artist's (quality-filtered) history. A second leg of a
+ * known tour, or a re-used label, is not new.
+ */
+function isNewLabel(run: Selection, shows: Show[]): boolean {
+  const inRun = new Set(run.shows.map((show) => show.id));
+  return !shows.some(
+    (show) => !inRun.has(show.id) && show.tourName === run.tourName
+  );
+}
 
 export function selectAuto(shows: Show[], options: AutoOptions): AutoDecision | null {
   const opts = { ...AUTO_DEFAULTS, ...options };
@@ -301,6 +322,16 @@ export function selectAuto(shows: Show[], options: AutoOptions): AutoDecision | 
         showCount: run.shows.length,
       });
     }
+  } else if (run.tourName !== null && isNewLabel(run, shows)) {
+    // Night one (or three) of a brand-new tour. Widening would drown the
+    // only evidence of the new setlist in the previous tour's material.
+    selection = run;
+    signals.push({
+      kind: "new-tour",
+      tourName: run.tourName,
+      showCount: run.shows.length,
+    });
+    cap(run.shows.length < opts.newTourLowBelow ? "low" : "medium");
   } else {
     selection = selectLastNShows(shows, opts.widenTo);
     signals.push({

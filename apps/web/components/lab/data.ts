@@ -56,7 +56,7 @@ export const LAB = {
   explanation: [
     "Scoring the 40 shows of Night Geometry Tour (2026-03-02 → 2026-06-27).",
     "The setlist barely changes night to night — the top songs are near locks.",
-    "We set aside 2 listings from this period that don't look like real setlists.",
+    "We set aside 2 shows from this period that don't look like real setlists.",
   ],
 };
 

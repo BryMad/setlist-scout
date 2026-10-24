@@ -131,3 +131,25 @@ tour's span). Oasis, U2, Phish, Talking Heads: unchanged decisions.
 
 Parked follow-up (see ROADMAP §0.0): the widen path is still a blunt blend
 with no comparison between the thin recent run and the older material.
+
+## Addendum (2026-09-23) — the new-tour rule
+
+Beck, night one of "Ride Lonesome": the recent run was one kept show
+(the next two dates existed on setlist.fm as empty shells and were
+quality-filtered out), so `thin-recent-run` widened to the last 60 and the
+brand-new setlist drowned in 2025 Orchestral material.
+
+The thin-run fallback now has one exception, checked before widening:
+
+```
+run < minTourSample AND run has a label AND that label appears on NO kept
+show outside the run
+  → trust the run as-is        signal: "new-tour"
+    confidence: low  if run < newTourLowBelow (3)
+                medium otherwise
+```
+
+"Has never appeared before" is the evidence. A thin second leg of a known
+tour, or a thin untagged cluster, still widens exactly as before. Beck
+after the fix: **latest-tour "Ride Lonesome", 1 show, LOW** — with the
+explanation saying so and promising sharper odds as shows come in.

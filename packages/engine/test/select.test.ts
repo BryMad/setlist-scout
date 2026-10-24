@@ -300,7 +300,7 @@ describe("selectAuto route-picker", () => {
     expect(decision.signals.some((s) => s.kind === "stale-data")).toBe(true);
   });
 
-  it("thin current run → widens to last-n with an explanatory signal", () => {
+  it("a thin run under a never-before-seen tour name is trusted on its own (night one of a new tour)", () => {
     const shows = [
       makeShow(20, { date: "2026-06-20", tourName: "Brand New Tour" }),
       makeShow(20, { date: "2026-06-21", tourName: "Brand New Tour" }),
@@ -313,11 +313,49 @@ describe("selectAuto route-picker", () => {
       ),
     ];
     const decision = selectAuto(shows, { asOf: TODAY })!;
+    expect(decision.selection.strategy).toBe("latest-tour");
+    expect(decision.selection.tourName).toBe("Brand New Tour");
+    expect(decision.selection.shows).toHaveLength(3);
+    expect(decision.signals).toEqual([
+      { kind: "new-tour", tourName: "Brand New Tour", showCount: 3 },
+    ]);
+    expect(decision.confidence).toBe("medium");
+  });
+
+  it("a single show of a brand-new tour is still trusted, at low confidence (the Beck night-one case)", () => {
+    const shows = [
+      makeShow(25, { date: "2026-06-22", tourName: "Ride Lonesome" }),
+      ...Array.from({ length: 13 }, (_, i) =>
+        makeShow(24, { date: `2025-07-${String(i + 15).padStart(2, "0")}`, tourName: "2025 Orchestral" })
+      ),
+    ];
+    const decision = selectAuto(shows, { asOf: TODAY })!;
+    expect(decision.selection.strategy).toBe("latest-tour");
+    expect(decision.selection.shows).toHaveLength(1);
+    expect(decision.signals[0]).toEqual({ kind: "new-tour", tourName: "Ride Lonesome", showCount: 1 });
+    expect(decision.confidence).toBe("low");
+  });
+
+  it("a thin run whose tour name has appeared before still widens to last-n", () => {
+    // leg two of a known tour, cut off from leg one by a long untagged stretch
+    const shows = [
+      makeShow(20, { date: "2026-06-20", tourName: "World Tour" }),
+      makeShow(20, { date: "2026-06-21", tourName: "World Tour" }),
+      makeShow(20, { date: "2026-04-01", tourName: null }),
+      makeShow(20, { date: "2026-01-15", tourName: null }),
+      ...Array.from({ length: 30 }, (_, i) =>
+        makeShow(20, {
+          date: `2025-0${(i % 9) + 1}-1${i % 10}`,
+          tourName: "World Tour",
+        })
+      ),
+    ];
+    const decision = selectAuto(shows, { asOf: TODAY })!;
     expect(decision.selection.strategy).toBe("last-n-shows");
     expect(decision.signals[0]).toMatchObject({
       kind: "thin-recent-run",
-      tourName: "Brand New Tour",
-      showCount: 3,
+      tourName: "World Tour",
+      showCount: 2,
     });
     expect(decision.confidence).toBe("medium");
   });

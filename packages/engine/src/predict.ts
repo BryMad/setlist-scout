@@ -148,15 +148,16 @@ function buildExplanation(
 ): string[] {
   const lines: string[] = [];
   const count = selection.shows.length;
+  const shows = `${count} show${count === 1 ? "" : "s"}`;
 
   switch (selection.strategy) {
     case "latest-tour":
     case "named-tour":
-      lines.push(`Based on ${count} shows from "${selection.tourName}".`);
+      lines.push(`Based on ${shows} from "${selection.tourName}".`);
       break;
     case "recent-run":
       lines.push(
-        `Based on ${count} shows from the artist's current run of dates ` +
+        `Based on ${shows} from the artist's current run of dates ` +
           `(${selection.shows[count - 1]!.date} to ${selection.shows[0]!.date}).`
       );
       break;
@@ -185,6 +186,13 @@ function buildExplanation(
                 `on the calendar (${signal.showCount} shows with setlists), so we treated them as the current tour — no older material mixed in.`
             : `Their current tour has a healthy sample on its own (${signal.showCount} shows with setlists), ` +
                 `so we analyzed exactly this tour — no older material mixed in.`
+        );
+        break;
+      case "new-tour":
+        lines.push(
+          `"${signal.tourName}" has just started — only ${signal.showCount === 1 ? "one show" : `${signal.showCount} shows`} so far — ` +
+            `but it's a tour this artist hasn't played before, so we analyzed it on its own rather than ` +
+            `mixing in older tours. Expect these odds to sharpen as more shows come in.`
         );
         break;
       case "thin-recent-run":
@@ -225,14 +233,14 @@ function buildExplanation(
 
   if (selection.strategy !== "single-show") {
     lines.push(
-      `A song's likelihood is the share of these ${count} shows it appeared in; ` +
+      `A song's likelihood is the share of these ${shows} it appeared in; ` +
         `the opener, encore, and album stats come from the same window.`
     );
   }
 
   if (selection.strategy !== "single-show" && excludedCount > 0) {
     lines.push(
-      `We set aside ${excludedCount} listing${excludedCount === 1 ? "" : "s"} from this period that don't look like real setlists (promo spots or empty entries).`
+      `We set aside ${excludedCount} show${excludedCount === 1 ? "" : "s"} from this period that don't look like real setlists (promo spots or empty entries).`
     );
   }
 
