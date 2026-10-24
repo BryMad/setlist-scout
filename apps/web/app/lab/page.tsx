@@ -18,6 +18,20 @@ export default function LabIndexPage() {
       </p>
 
       <section className="mt-8">
+        <h2 className="font-mono text-xs uppercase tracking-[0.2em] text-zinc-500">Layouts</h2>
+        <Link
+          href="/lab/layouts"
+          className="mt-3 block rounded-xl border border-zinc-800 bg-zinc-900/40 px-5 py-4 hover:border-indigo-600 hover:bg-zinc-900"
+        >
+          <span className="font-semibold">Latest shows + odds rail</span>
+          <p className="mt-1 text-sm text-zinc-500">
+            Three grayscale wireframes: latest setlists in the center, Most Likely compressed to a
+            right rail, with the new % popover row
+          </p>
+        </Link>
+      </section>
+
+      <section className="mt-8">
         <h2 className="font-mono text-xs uppercase tracking-[0.2em] text-zinc-500">Wordmarks</h2>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <Link
