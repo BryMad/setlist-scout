@@ -7,7 +7,7 @@ the point is that each idea is written down with enough context to pick it up la
 
 ## 0.0 IN FLIGHT — Auto route-picker misses recent untagged touring
 
-**Engine fix built 2026-09-11 (uncommitted):** `selectRecentRun` in
+**Engine fix built 2026-09-11 (committed 4892794):** `selectRecentRun` in
 `packages/engine/src/select.ts`, wired into `selectAuto`; signals renamed
 (`healthy-recent-run` / `thin-recent-run`, `high-rotation` now carries
 `tourName: string | null`); new `recent-run` strategy + explanation copy.
@@ -38,7 +38,7 @@ and the older shows; if overlap is high, blend freely; if low (they changed
 the set after the break), lean on the new leg even though it's small. Also
 still unbounded by date — a sparse artist's "last 60" can reach back years.
 
-## 0.0b DONE 2026-09-23 (uncommitted) — User-selectable prediction window
+## 0.0b DONE 2026-09-23 (27fce60) — User-selectable prediction window
 
 Built: the "Last 60 shows" tab is now "Last [N ▾] shows"
 (`components/ShowCountTab.tsx`), values 5 / 10 / 25 / 35 / 60 / 100 (35
@@ -58,7 +58,7 @@ means the latest *named* tour (`selectLatestTour`) — auto now uses the
 recent-run selector from §0.0 — which is exactly the distinction §0.0d's
 copy needs to explain.
 
-## 0.0e DONE 2026-09-23 (uncommitted) — Spotify save options
+## 0.0e DONE 2026-09-23 (1f1ba2f) — Spotify save options
 
 Gear button beside "Save as Spotify playlist" opens a popover of
 combinable options: only the top N songs (10/20/30/50/100), group by
