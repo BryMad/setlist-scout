@@ -1,11 +1,23 @@
 import { describe, expect, it } from "vitest";
-import { toIsoDate } from "../src/normalize.ts";
+import { songKey, toIsoDate } from "../src/normalize.ts";
 import { fixtureArtists, loadShows } from "./helpers.ts";
 
 describe("toIsoDate", () => {
   it("converts setlist.fm DD-MM-YYYY to ISO", () => {
     expect(toIsoDate("12-05-2026")).toBe("2026-05-12");
     expect(toIsoDate("01-01-1999")).toBe("1999-01-01");
+  });
+});
+
+describe("songKey", () => {
+  it("merges apostrophe variants — setlist.fm has both \"Devil's Haircut\" and \"Devils Haircut\"", () => {
+    expect(songKey("Devil's Haircut")).toBe("devils haircut");
+    expect(songKey("Devil’s Haircut")).toBe("devils haircut");
+    expect(songKey("Devils Haircut")).toBe("devils haircut");
+  });
+
+  it("lowercases and collapses whitespace", () => {
+    expect(songKey("  Where  It's At ")).toBe("where its at");
   });
 });
 

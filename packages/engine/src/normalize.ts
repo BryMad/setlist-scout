@@ -27,9 +27,17 @@ export interface Show {
   songCount: number;
 }
 
-/** Normalized song identity for grouping (lowercased, whitespace collapsed). */
+/** Straight and curly apostrophes plus the backtick people type in their place. */
+export const APOSTROPHES = /['\u2018\u2019`]/g;
+
+/**
+ * Normalized song identity for grouping: lowercased, whitespace collapsed,
+ * apostrophes dropped. setlist.fm contributors split on "Devil's Haircut" vs
+ * "Devils Haircut" (Spotify has no apostrophe); those must be one song, and
+ * the same key is what the Spotify track cache is filed under.
+ */
 export const songKey = (name: string): string =>
-  name.trim().toLowerCase().replace(/\s+/g, " ");
+  name.replace(APOSTROPHES, "").trim().toLowerCase().replace(/\s+/g, " ");
 
 /** Tour labels that mean "no tour" — setlist.fm data uses these literally. */
 const JUNK_TOUR_NAME = /^(no tour info|unknown|miscellaneous|various|n\/a)$/i;
