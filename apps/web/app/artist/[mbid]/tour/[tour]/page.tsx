@@ -47,7 +47,7 @@ export default async function TourPage({ params, searchParams }: PageProps) {
   ];
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-10">
+    <main className="mx-auto max-w-4xl px-6 py-10">
       <Link
         href={`/artist/${mbid}/tours${query}`}
         className="text-sm text-zinc-500 hover:text-zinc-300"

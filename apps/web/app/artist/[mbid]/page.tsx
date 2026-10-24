@@ -60,7 +60,7 @@ export default async function ArtistPage({ params, searchParams }: PageProps) {
   ];
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-10">
+    <main className="mx-auto max-w-4xl px-6 py-10">
       <h1 className="cascade-in text-3xl font-semibold tracking-tight">{name}</h1>
       <SectionNav mbid={mbid} name={name} active="predict" />
 

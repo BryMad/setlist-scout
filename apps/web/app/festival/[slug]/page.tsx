@@ -28,7 +28,7 @@ export default async function FestivalPage({ params }: PageProps) {
   if (!festival) notFound();
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-10">
+    <main className="mx-auto max-w-4xl px-6 py-10">
       <Link href="/festivals" className="text-sm text-zinc-500 hover:text-zinc-300">
         ← All festivals
       </Link>

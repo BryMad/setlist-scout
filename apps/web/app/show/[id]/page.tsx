@@ -18,7 +18,7 @@ export default async function ShowPage({ params, searchParams }: PageProps) {
   const show = await getSetlistById(id);
   if (!show) {
     return (
-      <main className="mx-auto max-w-3xl px-6 py-10">
+      <main className="mx-auto max-w-4xl px-6 py-10">
         <p className="mt-10 text-zinc-400">Show not found on setlist.fm.</p>
       </main>
     );
@@ -45,7 +45,7 @@ export default async function ShowPage({ params, searchParams }: PageProps) {
   const place = [show.venue, show.city].filter(Boolean).join(", ");
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-10">
+    <main className="mx-auto max-w-4xl px-6 py-10">
       <h1 className="cascade-in text-3xl font-semibold tracking-tight">{name}</h1>
       <p className="cascade-in mt-1 text-lg text-zinc-400 [animation-delay:60ms]">
         {place || "Unknown venue"} · {show.date}

@@ -10,7 +10,7 @@ export default async function FestivalsPage() {
   if (!festivalsEnabled()) notFound();
   const festivals = await getFestivals();
   return (
-    <main className="mx-auto max-w-3xl px-6 py-10">
+    <main className="mx-auto max-w-4xl px-6 py-10">
       <h1 className="cascade-in text-3xl font-semibold tracking-tight">Festival playlists</h1>
       <p className="cascade-in mt-3 max-w-xl text-sm leading-relaxed text-zinc-400 [animation-delay:60ms]">
         Pick a festival and we&apos;ll predict what every act on the lineup is

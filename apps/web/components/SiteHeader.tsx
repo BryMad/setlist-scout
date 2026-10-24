@@ -39,7 +39,7 @@ export default function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-zinc-800 bg-zinc-950/85 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-3xl items-center gap-3 px-4 sm:gap-4 sm:px-6">
+      <div className="mx-auto flex h-14 max-w-4xl items-center gap-3 px-4 sm:gap-4 sm:px-6">
         <Link href="/" className="shrink-0">
           <Wordmark />
         </Link>

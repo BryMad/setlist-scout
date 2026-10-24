@@ -3,7 +3,7 @@
 export default function SiteFooter() {
   return (
     <footer className="mt-20 border-t border-zinc-800/70 px-6 py-10">
-      <div className="mx-auto flex max-w-3xl flex-col items-center gap-10 sm:flex-row sm:items-start sm:justify-center sm:gap-20">
+      <div className="mx-auto flex max-w-4xl flex-col items-center gap-10 sm:flex-row sm:items-start sm:justify-center sm:gap-20">
         <a
           href="https://open.spotify.com"
           target="_blank"
@@ -29,7 +29,7 @@ export default function SiteFooter() {
           <img src="/setlistfm-logo.png" alt="setlist.fm" className="w-[200px]" />
         </a>
       </div>
-      <p className="mx-auto mt-10 max-w-3xl text-center text-xs leading-relaxed text-zinc-600">
+      <p className="mx-auto mt-10 max-w-4xl text-center text-xs leading-relaxed text-zinc-600">
         This app uses the Spotify API but is not endorsed, certified, or otherwise
         approved by Spotify. Spotify is a registered trademark of Spotify AB. See the{" "}
         <a
