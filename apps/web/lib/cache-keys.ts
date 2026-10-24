@@ -32,6 +32,13 @@ export const cacheKey = {
   // 3: punctuation-stripping normName (2 cached empty results for "Old 97's")
   incarnations: (normName: string) => `v2:incarnations3:${normName}`,
   // 2: entries carry album names since the canonical-display change
-  track: (artistLower: string, songKey: string) =>
-    `v2:track2:${artistLower}::${songKey}`,
+  // 3: matcher deletes apostrophes and rejects artist-only hits (a cached
+  //    "Devil's Haircut" → Aphex Twin remix would otherwise live 90 days)
+  // 4: entries carry albumReleaseDate + trackNumber (save option: group by album)
+  // 5: digits match spelled-out numbers ("7 And 7 Is" = "Seven and Seven Is");
+  //    no artist credit for a name merely inside another ("Tomorrow's Love")
+  // variant: "" = default match; "live" / "own" / "own-live" = save-option
+  //   lookups (live take, the performer's own recording of a cover)
+  track: (artistLower: string, songKey: string, variant = "") =>
+    `v2:track5:${artistLower}::${songKey}${variant ? `::${variant}` : ""}`,
 };

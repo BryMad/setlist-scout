@@ -38,9 +38,6 @@ export default async function ShowPage({ params, searchParams }: PageProps) {
   );
 
   const matches = await matchTracks(name, songs);
-  const uris = songs
-    .map((song) => matches.get(song.key)?.uri)
-    .filter((uri): uri is string => Boolean(uri));
 
   const place = [show.venue, show.city].filter(Boolean).join(", ");
 
@@ -63,7 +60,16 @@ export default async function ShowPage({ params, searchParams }: PageProps) {
           <SavePlaylist
             playlistName={`${name} — ${place || "live"} ${show.date}`}
             description={`The setlist from ${place || "this show"} on ${show.date}. Made with SetlistScout.`}
-            uris={uris}
+            build={{
+              artist: name,
+              // running order of the night; no default cap on an exact setlist
+              songs: songs.map(({ key, name: title, coverArtist }) => ({
+                key,
+                name: title,
+                coverArtist,
+              })),
+              defaultLimit: null,
+            }}
           />
         </div>
       </section>

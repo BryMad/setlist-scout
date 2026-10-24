@@ -13,8 +13,6 @@ import type { PredictMode } from "@setlistscout/engine";
 // serverless budget: cold fetch of 100 shows + spotify matching can take ~15s
 export const maxDuration = 60;
 
-/** How many top songs go into the playlist. */
-const PLAYLIST_SIZE = 30;
 /** getShows fetches ~100 recent listings, so N beyond that adds nothing. */
 const MAX_SHOW_COUNT = 100;
 /** How many songs get Spotify matching (art, links) — deeper than the playlist. */
@@ -55,12 +53,6 @@ export default async function ArtistPage({ params, searchParams }: PageProps) {
   if (prediction) {
     matches = await matchTracks(name, prediction.songs.slice(0, MATCH_SIZE));
   }
-  const playlistUris = prediction
-    ? prediction.songs
-        .slice(0, PLAYLIST_SIZE)
-        .map((song) => matches.get(song.key)?.uri)
-        .filter((uri): uri is string => Boolean(uri))
-    : [];
 
   const base = `/artist/${mbid}?name=${encodeURIComponent(name)}`;
   const tabs = [
@@ -108,7 +100,7 @@ export default async function ArtistPage({ params, searchParams }: PageProps) {
           <section className="cascade-in relative mt-4 rounded-xl border border-zinc-800 bg-zinc-900/60 p-5 [animation-delay:240ms]">
             {/* mobile: everything stacks centered; sm+: chips left, save right */}
             <div className="flex flex-col items-center gap-4 sm:flex-row sm:flex-wrap sm:justify-between sm:gap-x-6">
-              <div className="flex flex-col items-center gap-2.5 sm:min-w-0 sm:flex-1 sm:items-start">
+              <div className="flex flex-col items-center gap-2.5 sm:flex-1 sm:items-start">
                 <ConfidenceChip
                   confidence={prediction.confidence}
                   lines={prediction.explanation}
@@ -116,9 +108,18 @@ export default async function ArtistPage({ params, searchParams }: PageProps) {
                 <TourStats stats={buildTourStats(prediction, matches)} />
               </div>
               <SavePlaylist
-                playlistName={`${name} — Most Played Live`}
+                playlistName={`${name} — Most Likely Songs`}
                 description={`The songs ${name} is playing on tour, ranked from most likely to least likely. Made with SetlistScout from ${prediction.showsAnalyzed} shows (${prediction.dateRange.from} to ${prediction.dateRange.to}).`}
-                uris={playlistUris}
+                descriptionByAlbum={`The songs ${name} is playing on tour, grouped by album. Made with SetlistScout from ${prediction.showsAnalyzed} shows (${prediction.dateRange.from} to ${prediction.dateRange.to}).`}
+                build={{
+                  artist: name,
+                  songs: prediction.songs.map(({ key, name: title, coverArtist }) => ({
+                    key,
+                    name: title,
+                    coverArtist,
+                  })),
+                  defaultLimit: null,
+                }}
               />
             </div>
           </section>

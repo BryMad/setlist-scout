@@ -58,6 +58,23 @@ means the latest *named* tour (`selectLatestTour`) — auto now uses the
 recent-run selector from §0.0 — which is exactly the distinction §0.0d's
 copy needs to explain.
 
+## 0.0e DONE 2026-09-23 (uncommitted) — Spotify save options
+
+Gear button beside "Save as Spotify playlist" opens a popover of
+combinable options: only the top N songs (10/20/30/50/100), group by
+album (albums oldest→newest, album track order), prefer live versions
+(performer's live take, studio fallback), and for covers use the
+performer's own recording (original fallback; only shown when the list
+has covers). Default is every song, most likely first; the old silent
+top-30 cap (there since the first Spotify commit, 2026-07-02) is gone. Playlist building
+moved server-side (`buildPlaylistUris` in `lib/data.ts`); the festival
+builder still posts ready-made URIs.
+
+Known limits: album dates come from whichever release Spotify matched,
+so a reissue or compilation sorts by its reissue year (The Korgis'
+original lands in 2015). "All songs" with prefer-live on a cold cache
+for a huge catalog can approach the 60s function budget.
+
 ## 0.0c QUEUED — Unify the HUD/confidence disclosure affordance
 
 The confidence panel's "? How we got this" and the predict page's "See

@@ -90,6 +90,100 @@ describe("SpotifyClient matching", () => {
     expect(searches[0]!.url).toContain(encodeURIComponent('track:"Even Flow"'));
   });
 
+  it("matches across apostrophe spellings instead of grabbing the artist's most popular remix", async () => {
+    const items = [
+      track({ id: "remix", name: "Richard's Hairpiece - Aphex Twin Remix", artists: [{ name: "Beck" }], popularity: 80, uri: "spotify:track:remix" }),
+      track({ id: "studio", name: "Devils Haircut", artists: [{ name: "Beck" }], popularity: 60, uri: "spotify:track:studio" }),
+    ];
+    const { client } = makeClient([{ body: TOKEN }, { body: { tracks: { items } } }]);
+    const match = await client.matchSong({ key: "devils haircut", name: "Devil's Haircut", artist: "Beck" });
+    expect(match!.id).toBe("studio");
+  });
+
+  it("matches digits to spelled-out numbers instead of a band whose name contains the artist", async () => {
+    const items = [
+      track({ id: "love", name: "Seven and Seven Is", artists: [{ name: "Love" }], popularity: 39 }),
+      track({ id: "other", name: "7 And 7 Is", artists: [{ name: "Tomorrow's Love" }], popularity: 0 }),
+    ];
+    const { client } = makeClient([{ body: TOKEN }, { body: { tracks: { items } } }]);
+    const match = await client.matchSong({ key: "k", name: "7 And 7 Is", artist: "Love" });
+    expect(match!.id).toBe("love");
+  });
+
+  it("gives no artist credit to a band that merely contains the name", async () => {
+    const items = [
+      track({ id: "other", name: "Alone Again Or", artists: [{ name: "Tomorrow's Love" }], popularity: 80 }),
+      track({ id: "love", name: "Alone Again Or - 2015 Remaster", artists: [{ name: "Love" }], popularity: 10 }),
+    ];
+    const { client } = makeClient([{ body: TOKEN }, { body: { tracks: { items } } }]);
+    const match = await client.matchSong({ key: "k", name: "Alone Again Or", artist: "Love" });
+    expect(match!.id).toBe("love");
+  });
+
+  it("still credits a band whose name leads with the artist's", async () => {
+    const items = [
+      track({ id: "cover", name: "Refugee", artists: [{ name: "Some Tribute Band" }], popularity: 80 }),
+      track({ id: "tp", name: "Refugee", artists: [{ name: "Tom Petty and the Heartbreakers" }], popularity: 10 }),
+    ];
+    const { client } = makeClient([{ body: TOKEN }, { body: { tracks: { items } } }]);
+    const match = await client.matchSong({ key: "k", name: "Refugee", artist: "Tom Petty" });
+    expect(match!.id).toBe("tp");
+  });
+
+  it("returns null when only the artist matches — no title overlap is never a match", async () => {
+    const items = [
+      track({ id: "remix", name: "Richard's Hairpiece - Aphex Twin Remix", artists: [{ name: "Beck" }], popularity: 80 }),
+    ];
+    const { client } = makeClient([
+      { body: TOKEN },
+      { body: { tracks: { items } } },
+      { body: { tracks: { items } } },
+    ]);
+    const match = await client.matchSong({ key: "k", name: "Devil's Haircut", artist: "Beck" });
+    expect(match).toBeNull();
+  });
+
+  it("live mode picks the artist's live take and widens the search", async () => {
+    const items = [
+      track({ id: "studio", name: "Mr. Jones", artists: [{ name: "Counting Crows" }], popularity: 90 }),
+      track({ id: "tribute", name: "Mr. Jones - Live", artists: [{ name: "Some Tribute Band" }], popularity: 50 }),
+      track({ id: "live", name: "Mr. Jones - Live At Chelsea Studios", artists: [{ name: "Counting Crows" }], popularity: 40,
+        album: { name: "Across A Wire", release_date: "1998-01-01", images: [] }, track_number: 6 }),
+    ];
+    const { client, calls } = makeClient([{ body: TOKEN }, { body: { tracks: { items } } }]);
+    const match = await client.matchSong({ key: "k", name: "Mr. Jones", artist: "Counting Crows" }, { live: true });
+    expect(match!.id).toBe("live");
+    expect(match!.albumReleaseDate).toBe("1998-01-01");
+    expect(match!.trackNumber).toBe(6);
+    const search = calls.find((c) => c.url.includes("/search"))!;
+    expect(search.url).toContain("limit=20");
+    expect(decodeURIComponent(search.url)).toContain(" live");
+  });
+
+  it("live mode returns null when only studio takes exist, so callers fall back", async () => {
+    const items = [track({ name: "Loser", artists: [{ name: "Beck" }] })];
+    const { client } = makeClient([
+      { body: TOKEN },
+      { body: { tracks: { items } } },
+      { body: { tracks: { items } } },
+    ]);
+    expect(await client.matchSong({ key: "k", name: "Loser", artist: "Beck" }, { live: true })).toBeNull();
+  });
+
+  it("requireArtist rejects the original artist and loose credits like Jeff Beck for Beck", async () => {
+    const items = [
+      track({ id: "orig", name: "Everybody's Got to Learn Sometime", artists: [{ name: "The Korgis" }], popularity: 70 }),
+      track({ id: "jeff", name: "Everybody's Got to Learn Sometime", artists: [{ name: "Jeff Beck" }], popularity: 30 }),
+      track({ id: "beck", name: "Everybody's Gotta Learn Sometime", artists: [{ name: "Beck" }], popularity: 40 }),
+    ];
+    const { client } = makeClient([{ body: TOKEN }, { body: { tracks: { items } } }]);
+    const match = await client.matchSong(
+      { key: "k", name: "Everybody's Got to Learn Sometime", artist: "Beck" },
+      { requireArtist: true }
+    );
+    expect(match!.id).toBe("beck"); // "got to" and "gotta" compare equal
+  });
+
   it("returns null instead of a wrong-artist grab bag", async () => {
     const items = [track({ name: "Completely Different Song", artists: [{ name: "Someone Else" }] })];
     const { client } = makeClient([

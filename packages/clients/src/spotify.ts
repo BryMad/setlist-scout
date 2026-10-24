@@ -23,9 +23,11 @@ const trackSchema = z.object({
   uri: z.string(),
   name: z.string(),
   artists: z.array(z.object({ name: z.string() })).default([]),
+  track_number: z.number().optional(),
   album: z
     .object({
       name: z.string().optional(),
+      release_date: z.string().optional(),
       images: z
         .array(z.object({ url: z.string(), width: z.number().nullish() }))
         .default([]),
@@ -73,6 +75,23 @@ export interface MatchedTrack {
   album: string | null;
   albumArt: string | null;
   url: string | null;
+  /** "1996", "1996-06", or "1996-06-18" — Spotify's precision varies. */
+  albumReleaseDate: string | null;
+  trackNumber: number | null;
+}
+
+export interface MatchOptions {
+  /**
+   * Only accept a live recording ("… - Live", or an album with "Live" in its
+   * name). Returns null when none exists; callers fall back to a plain match.
+   */
+  live?: boolean;
+  /**
+   * The track must credit this song's artist. Used to find an artist's own
+   * recording of a cover — an exact title by the original artist would
+   * otherwise win on title alone.
+   */
+  requireArtist?: boolean;
 }
 
 export interface SongToMatch {
@@ -112,13 +131,39 @@ const DEFAULTS = {
 
 const defaultSleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
+/**
+ * Loose comparison form. Apostrophes are DELETED, not spaced: setlist.fm's
+ * "Devil's Haircut" must equal Spotify's "Devils Haircut" ("devil s" never
+ * would). Everything else non-alphanumeric collapses to a single space.
+ */
 const normalize = (value: string) =>
   value
     .toLowerCase()
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
+    .replace(/['\u2018\u2019`]/g, "")
     .replace(/[^\p{L}\p{N}]+/gu, " ")
-    .trim();
+    .trim()
+    // spoken contractions are spelled both ways across sources — Beck's own
+    // recording is "Everybody's Gotta Learn Sometime", setlist.fm has "Got to"
+    .replace(/\bgot to\b/g, "gotta")
+    .replace(/\bgoing to\b/g, "gonna")
+    .replace(/\bwant to\b/g, "wanna")
+    // small numbers are spelled both ways too — the Discogs/setlist.fm
+    // "7 And 7 Is" is Spotify's "Seven and Seven Is"
+    .replace(/\b(\d{1,2})\b/g, (digits) => NUMBER_WORDS[Number(digits)] ?? digits);
+
+const NUMBER_WORDS = [
+  "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+  "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen",
+  "eighteen", "nineteen", "twenty",
+];
+
+/** "Mr. Jones - Live", "Mr. Jones (Live at …)", or any track on a live album. */
+const LIVE = /\blive\b/;
+function isLiveTrack(track: z.infer<typeof trackSchema>): boolean {
+  return LIVE.test(normalize(track.name)) || LIVE.test(normalize(track.album?.name ?? ""));
+}
 
 /** Simple concurrency limiter so batch matching stays polite but parallel. */
 function pLimit(concurrency: number) {
@@ -185,13 +230,23 @@ export class SpotifyClient {
 
   // --- track matching (app token) ----------------------------------------
 
-  async matchSong(song: SongToMatch): Promise<MatchedTrack | null> {
+  async matchSong(
+    song: SongToMatch,
+    options: MatchOptions = {}
+  ): Promise<MatchedTrack | null> {
     const clean = (value: string) => value.replace(/"/g, "");
-    const fielded = `track:"${clean(song.name)}" artist:"${clean(song.artist)}"`;
-    let best = this.pickBest(await this.searchTracks(fielded), song);
+    // live cuts and an artist's cover rank below the famous take; widen the net
+    const extra = options.live ? " live" : "";
+    const limit = options.live || options.requireArtist ? 20 : 5;
+    const fielded = `track:"${clean(song.name)}" artist:"${clean(song.artist)}"${extra}`;
+    let best = this.pickBest(await this.searchTracks(fielded, limit), song, options);
     if (!best) {
       // fielded search misses loose spellings; plain text is more forgiving
-      best = this.pickBest(await this.searchTracks(`${song.name} ${song.artist}`), song);
+      best = this.pickBest(
+        await this.searchTracks(`${song.name} ${song.artist}${extra}`, limit),
+        song,
+        options
+      );
     }
     return best;
   }
@@ -204,14 +259,14 @@ export class SpotifyClient {
    */
   async matchSongs(
     songs: SongToMatch[],
-    options: { concurrency?: number } = {}
+    options: { concurrency?: number } & MatchOptions = {}
   ): Promise<Map<string, MatchedTrack | null>> {
     const limit = pLimit(options.concurrency ?? 6);
     const entries = await Promise.all(
       songs.map((song) =>
         limit(async (): Promise<[string, MatchedTrack | null] | null> => {
           try {
-            return [song.key, await this.matchSong(song)];
+            return [song.key, await this.matchSong(song, options)];
           } catch {
             return null; // one bad lookup never breaks the batch
           }
@@ -221,16 +276,17 @@ export class SpotifyClient {
     return new Map(entries.filter((entry) => entry !== null));
   }
 
-  private async searchTracks(query: string) {
+  private async searchTracks(query: string, limit = 5) {
     const data = await this.apiRequest(
-      `/search?type=track&limit=5&q=${encodeURIComponent(query)}`
+      `/search?type=track&limit=${limit}&q=${encodeURIComponent(query)}`
     );
     return searchResponseSchema.parse(data).tracks?.items ?? [];
   }
 
   private pickBest(
     items: z.infer<typeof trackSchema>[],
-    song: SongToMatch
+    song: SongToMatch,
+    options: MatchOptions = {}
   ): MatchedTrack | null {
     const songName = normalize(song.name);
     const artistName = normalize(song.artist);
@@ -243,9 +299,23 @@ export class SpotifyClient {
       if (trackName === songName) score += 4;
       else if (trackName.startsWith(songName) || songName.startsWith(trackName)) score += 2;
       else if (trackName.includes(songName)) score += 1;
-      if (artists.includes(artistName)) score += 3;
-      else if (artists.some((a) => a.includes(artistName) || artistName.includes(a)))
-        score += 1;
+      // No title overlap at all is never a match, however right the artist is —
+      // otherwise a misspelt song silently becomes the artist's most popular
+      // remix ("Devil's Haircut" → "Richard's Hairpiece - Aphex Twin Remix").
+      if (score === 0) continue;
+      if (options.live && !isLiveTrack(track)) continue;
+      const exactArtist = artists.includes(artistName);
+      // loose = one name leads the other ("Tom Petty" / "Tom Petty and the
+      // Heartbreakers"); a name merely inside another is a different band —
+      // "Tomorrow's Love" is not Love
+      const looseArtist =
+        !exactArtist &&
+        artists.some((a) => a.startsWith(`${artistName} `) || artistName.startsWith(`${a} `));
+      // a live take or "their own version" only counts when credited to this
+      // exact artist — a loose match lets "Jeff Beck" stand in for "Beck"
+      if ((options.live || options.requireArtist) && !exactArtist) continue;
+      if (exactArtist) score += 3;
+      else if (looseArtist) score += 1;
       score += (track.popularity ?? 0) / 1000; // tiebreaker only
       if (!best || score > best.score) best = { track, score };
     }
@@ -265,6 +335,8 @@ export class SpotifyClient {
       album: best.track.album?.name ?? null,
       albumArt: art?.url ?? null,
       url: best.track.external_urls?.spotify ?? null,
+      albumReleaseDate: best.track.album?.release_date ?? null,
+      trackNumber: best.track.track_number ?? null,
     };
   }
 

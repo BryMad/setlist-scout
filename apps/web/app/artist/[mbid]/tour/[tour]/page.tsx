@@ -14,7 +14,6 @@ import type { MatchedTrack } from "@setlistscout/clients";
 // serverless budget: may trigger the full-history crawl when the cache is cold
 export const maxDuration = 60;
 
-const PLAYLIST_SIZE = 30;
 const MATCH_SIZE = 60;
 
 interface PageProps {
@@ -136,10 +135,6 @@ async function PlayedView({
     name,
     prediction.songs.slice(0, MATCH_SIZE)
   );
-  const playlistUris = prediction.songs
-    .slice(0, PLAYLIST_SIZE)
-    .map((song) => matches.get(song.key)?.uri)
-    .filter((uri): uri is string => Boolean(uri));
 
   return (
     <>
@@ -156,7 +151,7 @@ async function PlayedView({
       <section className="cascade-in relative mt-4 rounded-xl border border-zinc-800 bg-zinc-900/60 p-5 [animation-delay:240ms]">
         {/* mobile: everything stacks centered; sm+: chips left, save right */}
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:flex-wrap sm:justify-between sm:gap-x-6">
-          <div className="flex flex-col items-center gap-2.5 sm:min-w-0 sm:flex-1 sm:items-start">
+          <div className="flex flex-col items-center gap-2.5 sm:flex-1 sm:items-start">
             <ConfidenceChip
               confidence={prediction.confidence}
               lines={prediction.explanation}
@@ -166,15 +161,28 @@ async function PlayedView({
           <SavePlaylist
             playlistName={
               isNoTour
-                ? `${name} — Most Played Live, One-Off Shows`
-                : `${name} — Most Played Live on ${tourName}`
+                ? `${name} — Most Likely Songs, One-Off Shows`
+                : `${name} — Most Likely Songs on ${tourName}`
             }
             description={
               isNoTour
                 ? `The songs ${name} is playing at one-off shows, ranked from most likely to least likely. Made with SetlistScout from ${prediction.showsAnalyzed} shows not part of any tour.`
                 : `The songs ${name} is playing on ${tourName}, ranked from most likely to least likely. Made with SetlistScout from ${prediction.showsAnalyzed} shows on ${tourName}.`
             }
-            uris={playlistUris}
+            descriptionByAlbum={
+              isNoTour
+                ? `The songs ${name} is playing at one-off shows, grouped by album. Made with SetlistScout from ${prediction.showsAnalyzed} shows not part of any tour.`
+                : `The songs ${name} is playing on ${tourName}, grouped by album. Made with SetlistScout from ${prediction.showsAnalyzed} shows on ${tourName}.`
+            }
+            build={{
+              artist: name,
+              songs: prediction.songs.map(({ key, name: title, coverArtist }) => ({
+                key,
+                name: title,
+                coverArtist,
+              })),
+              defaultLimit: null,
+            }}
           />
         </div>
       </section>

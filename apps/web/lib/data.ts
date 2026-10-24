@@ -47,14 +47,16 @@ export interface ArtistSuggestion {
 /**
  * Sources disagree on punctuation — Spotify "Old 97's" vs setlist.fm
  * "Old 97’s" (U+2019), "Panic! at the Disco", "&" vs "and" — so strip it all
- * rather than chase variants. "&"/"+" become "and" first: the incarnation
- * separator check below needs them to survive as a word.
+ * rather than chase variants. Apostrophes are deleted rather than spaced so
+ * "The B-52's" and "The B-52s" agree. "&"/"+" become "and" first: the
+ * incarnation separator check below needs them to survive as a word.
  */
 const normName = (value: string) => {
   const stripped = value
     .toLowerCase()
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
+    .replace(/['\u2018\u2019`]/g, "")
     .replace(/[&+]/g, " and ")
     .replace(/[^\p{L}\p{N}]+/gu, " ")
     .trim();
@@ -280,6 +282,138 @@ export async function matchTracks(
   return results;
 }
 
+/* ── playlist save options ───────────────────────────────────────── */
+
+export interface PlaylistSong {
+  key: string;
+  name: string;
+  coverArtist: string | null;
+}
+
+export interface PlaylistOptions {
+  /** Keep only the first N songs (input order = most likely first). null = all. */
+  limit: number | null;
+  /** Order by album, albums oldest → newest, tracks in album order. */
+  groupByAlbum: boolean;
+  /** Prefer the performing artist's live recordings; studio when none. */
+  preferLive: boolean;
+  /** For covers, prefer the performing artist's own recording over the original. */
+  artistCovers: boolean;
+}
+
+export const DEFAULT_PLAYLIST_OPTIONS: PlaylistOptions = {
+  limit: null,
+  groupByAlbum: false,
+  preferLive: false,
+  artistCovers: false,
+};
+
+interface MatchAttempt {
+  artist: string;
+  variant: "" | "live" | "own" | "own-live";
+}
+
+/** Most-preferred first; the last attempt is always the default match. */
+function attemptsFor(
+  song: PlaylistSong,
+  performer: string,
+  options: PlaylistOptions
+): MatchAttempt[] {
+  const attempts: MatchAttempt[] = [];
+  if (song.coverArtist) {
+    if (options.artistCovers) {
+      if (options.preferLive) attempts.push({ artist: performer, variant: "own-live" });
+      attempts.push({ artist: performer, variant: "own" });
+    }
+    // live applies to the performer only — the original artist's live take
+    // of a song Beck covers is nobody's idea of "prefer live"
+    attempts.push({ artist: song.coverArtist, variant: "" });
+  } else {
+    if (options.preferLive) attempts.push({ artist: performer, variant: "live" });
+    attempts.push({ artist: performer, variant: "" });
+  }
+  return attempts;
+}
+
+async function matchAttempt(
+  song: PlaylistSong,
+  attempt: MatchAttempt
+): Promise<MatchedTrack | null | undefined> {
+  const key = cacheKey.track(attempt.artist.toLowerCase(), song.key, attempt.variant);
+  const hit = await cacheGet<CachedMatch>(key);
+  if (hit !== undefined) return hit.m;
+  try {
+    const match = await spotify.matchSong(
+      { key: song.key, name: song.name, artist: attempt.artist },
+      {
+        live: attempt.variant === "live" || attempt.variant === "own-live",
+        requireArtist: attempt.variant !== "",
+      }
+    );
+    await cacheSet(key, { m: match }, TRACK_TTL_S);
+    return match;
+  } catch {
+    return undefined; // errored: try the next attempt, never cache the absence
+  }
+}
+
+/** Order by album, albums oldest → newest (Spotify dates vary in precision,
+ *  but ISO prefixes compare correctly as strings); unmatched-album tracks last. */
+function groupByAlbum(tracks: MatchedTrack[]): MatchedTrack[] {
+  const groups = new Map<string, MatchedTrack[]>();
+  for (const track of tracks) {
+    const id = track.album ? `${track.albumReleaseDate ?? ""}::${track.album}` : "";
+    groups.set(id, [...(groups.get(id) ?? []), track]);
+  }
+  const loose = groups.get("") ?? [];
+  groups.delete("");
+  const albums = [...groups.values()].sort((a, b) => {
+    const da = a[0]!.albumReleaseDate ?? "9999";
+    const db = b[0]!.albumReleaseDate ?? "9999";
+    return da < db ? -1 : da > db ? 1 : 0;
+  });
+  for (const album of albums) {
+    album.sort((a, b) => (a.trackNumber ?? 999) - (b.trackNumber ?? 999));
+  }
+  return [...albums.flat(), ...loose];
+}
+
+/**
+ * Songs (most likely first) → playlist URIs under the chosen save options.
+ * The default path reads the same cache the page's matching wrote, so a
+ * plain save costs no Spotify lookups at all.
+ */
+export async function buildPlaylistUris(
+  performer: string,
+  songs: PlaylistSong[],
+  options: PlaylistOptions
+): Promise<string[]> {
+  const chosen = options.limit ? songs.slice(0, options.limit) : songs;
+  const tracks: (MatchedTrack | null)[] = new Array(chosen.length).fill(null);
+
+  let next = 0;
+  const worker = async () => {
+    while (next < chosen.length) {
+      const i = next++;
+      const song = chosen[i]!;
+      for (const attempt of attemptsFor(song, performer, options)) {
+        const match = await matchAttempt(song, attempt);
+        if (match) {
+          tracks[i] = match;
+          break;
+        }
+      }
+    }
+  };
+  await Promise.all(Array.from({ length: 8 }, worker));
+
+  let ordered = tracks.filter((track): track is MatchedTrack => track !== null);
+  if (options.groupByAlbum) ordered = groupByAlbum(ordered);
+  // two setlist spellings can land on one track — Spotify rejects nothing,
+  // it just plays it twice
+  return [...new Set(ordered.map((track) => track.uri))];
+}
+
 /* ── festival playlists (roadmap §0) ─────────────────────────────── */
 
 export interface FestivalArtistData {
@@ -306,7 +440,8 @@ const FESTIVAL_SONG_BUDGET = 40; // "everything recent" depth pulls the full bud
  * warm festival page costs one Redis read per artist.
  */
 export async function festivalArtist(lineupName: string): Promise<FestivalArtistData> {
-  const cacheKey = `v2:festartist2:${normName(lineupName)}`;
+  // 3: track matcher fix (spelled-out numbers, contained artist names)
+  const cacheKey = `v2:festartist3:${normName(lineupName)}`;
   const cached = await cacheGet<FestivalArtistData>(cacheKey);
   if (cached) return cached;
 
