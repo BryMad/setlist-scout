@@ -38,7 +38,15 @@ and the older shows; if overlap is high, blend freely; if low (they changed
 the set after the break), lean on the new leg even though it's small. Also
 still unbounded by date — a sparse artist's "last 60" can reach back years.
 
-## 0.0b QUEUED — User-selectable prediction window
+## 0.0b DONE 2026-09-23 (uncommitted) — User-selectable prediction window
+
+Built: the "Last 60 shows" tab is now "Last [N ▾] shows"
+(`components/ShowCountTab.tsx`), values 5 / 10 / 25 / 35 / 60 / 100 (35
+added on request), URL `?mode=last&n=25`; old `?mode=last60` links still
+work. No custom-number input was ever planned, so none was built — a
+hand-edited `?n=` is honored (capped at 100, the recent fetch size).
+
+Original note:
 
 The artist page's mode tabs are Auto / Latest tour / Last 60 shows
 (`apps/web/app/artist/[mbid]/page.tsx`, `?mode=`) — and "60" is baked in.

@@ -2,6 +2,7 @@ import Link from "next/link";
 import ConfidenceChip from "@/components/ConfidenceChip";
 import SavePlaylist from "@/components/SavePlaylist";
 import SectionNav from "@/components/SectionNav";
+import ShowCountTab, { DEFAULT_SHOW_COUNT } from "@/components/ShowCountTab";
 import SongList from "@/components/SongList";
 import TourStats from "@/components/TourStats";
 import { getShows, matchTracks, runPrediction } from "@/lib/data";
@@ -14,6 +15,8 @@ export const maxDuration = 60;
 
 /** How many top songs go into the playlist. */
 const PLAYLIST_SIZE = 30;
+/** getShows fetches ~100 recent listings, so N beyond that adds nothing. */
+const MAX_SHOW_COUNT = 100;
 /** How many songs get Spotify matching (art, links) — deeper than the playlist. */
 const MATCH_SIZE = 60;
 
@@ -28,15 +31,22 @@ export default async function ArtistPage({ params, searchParams }: PageProps) {
   const str = (v: string | string[] | undefined) => (typeof v === "string" ? v : null);
 
   const name = str(sp.name) ?? "Artist";
-  const modeParam = str(sp.mode) ?? "auto";
+  // "last60" is the pre-dropdown URL — keep old links working
+  const rawMode = str(sp.mode) ?? "auto";
+  const modeParam = rawMode === "last60" ? "last" : rawMode;
+  const nParam = Number(str(sp.n) ?? (rawMode === "last60" ? 60 : DEFAULT_SHOW_COUNT));
+  const showCount =
+    Number.isInteger(nParam) && nParam > 0
+      ? Math.min(nParam, MAX_SHOW_COUNT)
+      : DEFAULT_SHOW_COUNT;
 
   const shows = await getShows(mbid);
 
   const mode: PredictMode =
     modeParam === "latest"
       ? { kind: "latest-tour" }
-      : modeParam === "last60"
-        ? { kind: "last-n-shows", n: 60 }
+      : modeParam === "last"
+        ? { kind: "last-n-shows", n: showCount }
         : { kind: "auto" };
 
   const prediction = runPrediction(shows, mode);
@@ -56,7 +66,6 @@ export default async function ArtistPage({ params, searchParams }: PageProps) {
   const tabs = [
     { key: "auto", label: "Auto", href: base },
     { key: "latest", label: "Latest tour", href: `${base}&mode=latest` },
-    { key: "last60", label: "Last 60 shows", href: `${base}&mode=last60` },
   ];
 
   return (
@@ -78,6 +87,7 @@ export default async function ArtistPage({ params, searchParams }: PageProps) {
             {tab.label}
           </Link>
         ))}
+        <ShowCountTab base={base} active={modeParam === "last"} n={showCount} />
       </nav>
 
       {!prediction ? (
